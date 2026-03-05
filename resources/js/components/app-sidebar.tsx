@@ -35,24 +35,24 @@ const data = {
     },
     teams: [
         {
-            name: "Acme Inc",
+            name: "APVMA",
             logo: GalleryVerticalEnd,
             plan: "Enterprise",
         },
         {
-            name: "Acme Corp.",
+            name: "HREC",
             logo: AudioWaveform,
             plan: "Startup",
         },
         {
-            name: "Evil Corp.",
+            name: "ACQSC",
             logo: Command,
             plan: "Free",
         },
     ],
     navMain: [
         {
-            title: "Playground",
+            title: "Dashboard",
             url: "#",
             icon: SquareTerminal,
             isActive: true,
@@ -72,7 +72,7 @@ const data = {
             ],
         },
         {
-            title: "Models",
+            title: "Templates",
             url: "#",
             icon: Bot,
             items: [
@@ -91,7 +91,7 @@ const data = {
             ],
         },
         {
-            title: "Documentation",
+            title: "Survey",
             url: "#",
             icon: BookOpen,
             items: [
