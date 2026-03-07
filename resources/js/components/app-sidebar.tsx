@@ -4,14 +4,17 @@ import * as React from "react"
 import {
     AudioWaveform,
     BookOpen,
-    Bot,
     Command,
     Frame,
     GalleryVerticalEnd,
     Map,
     PieChart,
     Settings2,
-    SquareTerminal,
+    ChartPie,
+    ChartNoAxesCombined,
+    FileDown,
+    MapPlus,
+    ClipboardList
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -54,19 +57,15 @@ const data = {
         {
             title: "Dashboard",
             url: "#",
-            icon: SquareTerminal,
+            icon: ChartPie,
             isActive: true,
             items: [
                 {
-                    title: "History",
+                    title: "My Active Surveys",
                     url: "#",
                 },
                 {
-                    title: "Starred",
-                    url: "#",
-                },
-                {
-                    title: "Settings",
+                    title: " Recent Responses",
                     url: "#",
                 },
             ],
@@ -74,64 +73,55 @@ const data = {
         {
             title: "Templates",
             url: "#",
-            icon: Bot,
-            items: [
-                {
-                    title: "Genesis",
-                    url: "#",
-                },
-                {
-                    title: "Explorer",
-                    url: "#",
-                },
-                {
-                    title: "Quantum",
-                    url: "#",
-                },
-            ],
-        },
-        {
-            title: "Survey",
-            url: "#",
             icon: BookOpen,
             items: [
                 {
-                    title: "Introduction",
+                    title: "All Templates",
                     url: "#",
                 },
                 {
-                    title: "Get Started",
-                    url: "#",
-                },
-                {
-                    title: "Tutorials",
-                    url: "#",
-                },
-                {
-                    title: "Changelog",
+                    title: "Create Template",
                     url: "#",
                 },
             ],
         },
         {
-            title: "Settings",
+            title: "Survey Runs",
             url: "#",
-            icon: Settings2,
+            icon: ClipboardList,
             items: [
                 {
-                    title: "General",
+                    title: "Active Surveys",
                     url: "#",
                 },
                 {
-                    title: "Team",
+                    title: "Create Survey Run",
                     url: "#",
                 },
                 {
-                    title: "Billing",
+                    title: "My Archived Surveys",
                     url: "#",
                 },
+            ],
+        },
+        {
+            title: "Reports",
+            url: "#",
+            icon: ChartNoAxesCombined,
+            items: [
                 {
-                    title: "Limits",
+                    title: "Survey Analytics",
+                    url: "#",
+                },
+            ],
+        },
+        {
+            title: "Exports",
+            url: "#",
+            icon: FileDown,
+            items: [
+                {
+                    title: "Export Responses",
                     url: "#",
                 },
             ],
