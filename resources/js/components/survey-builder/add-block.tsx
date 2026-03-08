@@ -4,19 +4,19 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu"
-import { BlockType } from "./survey-builder"
+import type { BlockType } from "./survey-builder"
 
 type AddBlockProps = {
-  addBlock: (type: BlockType, index?: number) => void
-  index?: number
+  addBlock: (type: BlockType, presetLabel?: string) => void
 }
 
+export default function AddBlock({ addBlock }: AddBlockProps) {
+  const inputPresets = ["Name", "Age", "Address", "Postcode", "Mobile Number"]
 
-export default function AddBlock({ addBlock, index }: AddBlockProps) {
   return (
     <DropdownMenu>
-
       <DropdownMenuTrigger asChild>
         <button className="flex items-center gap-2 text-muted-foreground">
           <Plus size={18} />
@@ -24,8 +24,7 @@ export default function AddBlock({ addBlock, index }: AddBlockProps) {
         </button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent>
-
+      <DropdownMenuContent className="min-w-[200px]">
         <DropdownMenuItem onClick={() => addBlock("heading")}>
           Heading
         </DropdownMenuItem>
@@ -46,8 +45,20 @@ export default function AddBlock({ addBlock, index }: AddBlockProps) {
           Open Ended
         </DropdownMenuItem>
 
-      </DropdownMenuContent>
+        {/* Input Field with presets */}
+        <DropdownMenuLabel className="text-xs text-muted-foreground mt-2">
+          Input Fields
+        </DropdownMenuLabel>
 
+        {inputPresets.map((preset) => (
+          <DropdownMenuItem
+            key={preset}
+            onClick={() => addBlock("input", preset)}
+          >
+            {preset}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
     </DropdownMenu>
   )
 }

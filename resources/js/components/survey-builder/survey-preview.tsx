@@ -139,6 +139,26 @@ export default function SurveyPreview({ blocks }: any) {
           )
         }
 
+        if (block.type === "input") {
+          return (
+            <div key={block.id} className="space-y-2">
+              <label className="font-medium text-sm">{block.label}</label>
+              <input
+                type="text"
+                className="w-full border rounded px-2 py-1"
+                value={block.content || ""}
+                onChange={(e) =>
+                  setResponses({
+                    ...responses,
+                    [block.id]: e.target.value,
+                  })
+                }
+                placeholder={`Enter ${block.label || "value"}`}
+              />
+            </div>
+          )
+        }
+
       })}
 
     </div>

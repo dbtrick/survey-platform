@@ -5,6 +5,7 @@ import HeadingBlock from "./heading-block"
 import SubheadingBlock from "./subheading-block"
 import CheckboxQuestionBlock from "./checkbox-question-block"
 import OpenEndedQuestionBlock from "./openended-question-block"
+import InputBlock from "./input-block"
 import { Button } from "@/components/ui/button"
 import SurveyPreview from "./survey-preview"
 import { Trash2, Plus } from "lucide-react"
@@ -15,10 +16,12 @@ export type BlockType =
   | "radio"
   | "checkbox"
   | "openended"
+  | "input"
 
 export type Block = {
   id: string
   type: BlockType
+  label?: string
   content?: string
   options?: string[]
 }
@@ -29,14 +32,14 @@ export default function SurveyBuilder() {
   const [previewMode, setPreviewMode] = useState(false)
   const [responses, setResponses] = useState<any>({})
 
-  function addBlock(type: BlockType) {
+  function addBlock(type: BlockType, presetLabel?: string) {
     const newBlock: Block = {
       id: crypto.randomUUID(),
       type,
-      content: "",
+      label: presetLabel || "",
+      content: type === "input" ? "" : presetLabel || "",
       options: type === "radio" || type === "checkbox" ? [""] : [],
     }
-
     setBlocks([...blocks, newBlock])
   }
 
@@ -89,6 +92,9 @@ export default function SurveyBuilder() {
                 )}
                 {block.type === "openended" && (
                   <OpenEndedQuestionBlock block={block} updateBlock={updateBlock} />
+                )}
+                {block.type === "input" && (
+                  <InputBlock block={block} updateBlock={updateBlock} />
                 )}
               </div>
 
