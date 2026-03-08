@@ -62,7 +62,7 @@ const data = {
             items: [
                 {
                     title: "My Active Surveys",
-                    url: "#",
+                    url: "http://localhost:8000/dashboard",
                 },
                 {
                     title: " Recent Responses",
@@ -96,7 +96,7 @@ const data = {
                 },
                 {
                     title: "Create Survey Run",
-                    url: "#",
+                    url: "/survey-runs/create",
                 },
                 {
                     title: "My Archived Surveys",
