@@ -7,6 +7,7 @@ import CheckboxQuestionBlock from "./checkbox-question-block"
 import OpenEndedQuestionBlock from "./openended-question-block"
 import { Button } from "@/components/ui/button"
 import SurveyPreview from "./survey-preview"
+import { Trash2, Plus } from "lucide-react"
 
 export type BlockType =
   | "heading"
@@ -21,7 +22,6 @@ export type Block = {
   content?: string
   options?: string[]
 }
-
 
 
 export default function SurveyBuilder() {
@@ -67,60 +67,61 @@ export default function SurveyBuilder() {
         <SurveyPreview blocks={blocks} />
       ) : (
         <>
-          {blocks.map((block) => {
 
-            if (block.type === "heading") {
-              return (
-                <HeadingBlock
-                  key={block.id}
-                  block={block}
-                  updateBlock={updateBlock}
+          {blocks.map((block, index) => (
+            <div
+              key={block.id}
+              className="border rounded-lg p-4 pl-8 space-y-4 flex items-start justify-between relative"
+            >
+              {/* Block content */}
+              <div className="flex-1 space-y-2">
+                {block.type === "heading" && (
+                  <HeadingBlock block={block} updateBlock={updateBlock} />
+                )}
+                {block.type === "subheading" && (
+                  <SubheadingBlock block={block} updateBlock={updateBlock} />
+                )}
+                {block.type === "radio" && (
+                  <RadioQuestionBlock block={block} updateBlock={updateBlock} />
+                )}
+                {block.type === "checkbox" && (
+                  <CheckboxQuestionBlock block={block} updateBlock={updateBlock} />
+                )}
+                {block.type === "openended" && (
+                  <OpenEndedQuestionBlock block={block} updateBlock={updateBlock} />
+                )}
+              </div>
+
+              {/* Trash + Add buttons */}
+              <div className="flex flex-col items-center ml-4 space-y-2">
+                {/* Delete block */}
+                <button
+                  type="button"
+                  onClick={() => setBlocks(blocks.filter((b) => b.id !== block.id))}
+                  className="flex items-center gap-1 text-red-500 hover:text-red-700"
+                  title="Delete Block"
+                >
+                  <Trash2 size={18} />
+                  <span className="text-sm font-medium">Delete block</span>
+                </button>
+
+                {/* Add block below delete */}
+                <AddBlock
+                  addBlock={(type) => {
+                    const newBlock = {
+                      id: crypto.randomUUID(),
+                      type,
+                      content: "",
+                      options: type === "radio" || type === "checkbox" ? [""] : [],
+                    }
+                    const newBlocks = [...blocks]
+                    newBlocks.splice(index + 1, 0, newBlock)
+                    setBlocks(newBlocks)
+                  }}
                 />
-              )
-            }
-
-            if (block.type === "subheading") {
-              return (
-                <SubheadingBlock
-                  key={block.id}
-                  block={block}
-                  updateBlock={updateBlock}
-                />
-              )
-            }
-
-            if (block.type === "radio") {
-              return (
-                <RadioQuestionBlock
-                  key={block.id}
-                  block={block}
-                  updateBlock={updateBlock}
-                />
-              )
-            }
-
-            if (block.type === "checkbox") {
-              return (
-                <CheckboxQuestionBlock
-                  key={block.id}
-                  block={block}
-                  updateBlock={updateBlock}
-                />
-              )
-            }
-
-            if (block.type === "openended") {
-              return (
-                <OpenEndedQuestionBlock
-                  key={block.id}
-                  block={block}
-                  updateBlock={updateBlock}
-                />
-              )
-            }
-
-            return null
-          })}
+              </div>
+            </div>
+          ))}
 
           <AddBlock addBlock={addBlock} />
         </>
