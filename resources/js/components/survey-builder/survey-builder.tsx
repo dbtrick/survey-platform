@@ -23,6 +23,7 @@ export type Block = {
 }
 
 
+
 export default function SurveyBuilder() {
   const [blocks, setBlocks] = useState<Block[]>([])
   const [previewMode, setPreviewMode] = useState(false)

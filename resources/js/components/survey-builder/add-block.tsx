@@ -5,8 +5,15 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu"
+import { BlockType } from "./survey-builder"
 
-export default function AddBlock({ addBlock }: any) {
+type AddBlockProps = {
+  addBlock: (type: BlockType, index?: number) => void
+  index?: number
+}
+
+
+export default function AddBlock({ addBlock, index }: AddBlockProps) {
   return (
     <DropdownMenu>
 
