@@ -1,7 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { Trash2, Plus } from "lucide-react"
+import { Trash2, Plus, FilePlus, Layers } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import AddBlock from "./add-block"
 import RadioQuestionBlock from "./radio-question-block"
 import HeadingBlock from "./heading-block"
@@ -16,6 +17,7 @@ export type BlockType = "heading" | "subheading" | "radio" | "checkbox" | "opene
 export type Block = {
   id: string
   type: BlockType
+  page: number
   label?: string
   content?: string
   options?: string[]
@@ -24,132 +26,123 @@ export type Block = {
 
 export default function SurveyBuilder() {
   const [blocks, setBlocks] = useState<Block[]>([])
+  const [activePage, setActivePage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
 
-  // Define which types count as questions for numbering
-  const questionTypes = ["radio", "checkbox", "openended", "input"];
+  const questionTypes = ["radio", "checkbox", "openended", "input"]
+  const currentPageBlocks = blocks.filter((b) => b.page === activePage)
 
-  function addBlock(type: BlockType, presetLabel?: string) {
+  const getGlobalQuestionNumber = (blockId: string) => {
+    const allQuestionBlocks = blocks.filter((b) => questionTypes.includes(b.type))
+    const index = allQuestionBlocks.findIndex((b) => b.id === blockId)
+    return index !== -1 ? index + 1 : null
+  }
+
+  function addBlockAt(type: BlockType, index: number) {
     const newBlock: Block = {
       id: crypto.randomUUID(),
       type,
-      label: presetLabel || "",
-      content: type === "input" ? "Contact Information" : presetLabel || "",
-      options: type === "radio" || type === "checkbox" || type === "input"
-        ? [presetLabel || "Option 1"]
-        : [],
-    };
-    setBlocks([...blocks, newBlock]);
+      page: activePage,
+      content: "",
+      options: ["radio", "checkbox", "input"].includes(type) ? ["Option 1"] : [],
+      hasOther: false
+    }
+    const newBlocks = [...blocks]
+    const currentBlockOnPage = currentPageBlocks[index]
+    const globalIndex = currentBlockOnPage
+      ? blocks.findIndex(b => b.id === currentBlockOnPage.id) + 1
+      : blocks.length
+
+    newBlocks.splice(globalIndex, 0, newBlock)
+    setBlocks(newBlocks)
   }
 
   function updateBlock(id: string, newBlock: Block) {
-    setBlocks(blocks.map((b) => (b.id === id ? newBlock : b)));
+    setBlocks(blocks.map((b) => (b.id === id ? newBlock : b)))
   }
 
-  // Helper to calculate the question number dynamically
-  const getQuestionNumber = (index: number) => {
-    return blocks
-      .slice(0, index + 1)
-      .filter((b) => questionTypes.includes(b.type)).length;
-  };
+  function removeBlock(id: string) {
+    setBlocks(blocks.filter((b) => b.id !== id))
+  }
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-[1fr_600px] gap-16 items-start px-4">
-
-      {/* LEFT COLUMN: BUILDER */}
-      <div className="space-y-8 max-w-3xl ml-auto w-full">
-        <div className="flex items-center justify-between border-b pb-4">
-          <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-primary" />
-            Survey Editor
-          </h2>
-          <span className="text-xs font-medium text-muted-foreground bg-secondary px-3 py-1 rounded-full">
-            {blocks.length} Total Blocks
-          </span>
-        </div>
-
-        <div className="space-y-6">
-          {blocks.map((block, index) => {
-            const isQuestion = questionTypes.includes(block.type);
-            const qNumber = isQuestion ? getQuestionNumber(index) : null;
-
-            return (
-              <div
-                key={block.id}
-                className="group border rounded-2xl p-6 pl-14 space-y-4 flex items-start justify-between relative bg-card shadow-sm border-border/60 hover:border-primary/30 transition-all"
+    <div className="grid grid-cols-1 xl:grid-cols-[1fr_550px] gap-10 items-start px-4">
+      {/* BUILDER SECTION */}
+      <div className="space-y-6 w-full">
+        <div className="flex items-center justify-between bg-card border rounded-2xl p-2 shadow-sm sticky top-0 z-20 backdrop-blur-md bg-card/80">
+          <div className="flex items-center gap-2 overflow-x-auto p-1">
+            {Array.from({ length: totalPages }).map((_, i) => (
+              <Button
+                key={i}
+                variant={activePage === i + 1 ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setActivePage(i + 1)}
+                className="h-8 px-4 rounded-xl font-bold"
               >
-                {/* Question Badge (Only for Questions) */}
-                {isQuestion && (
-                  <div className="absolute left-4 top-7 flex items-center justify-center w-7 h-7 rounded-lg bg-primary/10 text-primary text-[11px] font-bold font-mono border border-primary/20">
-                    {String(qNumber).padStart(2, '0')}
-                  </div>
-                )}
-
-                {/* Subtle Indicator for Layout Blocks */}
-                {!isQuestion && (
-                  <div className="absolute left-6 top-8 w-1 h-10 rounded-full bg-muted opacity-40" />
-                )}
-
-                <div className="flex-1">
-                  {block.type === "heading" && <HeadingBlock block={block} updateBlock={updateBlock} />}
-                  {block.type === "subheading" && <SubheadingBlock block={block} updateBlock={updateBlock} />}
-                  {block.type === "radio" && <RadioQuestionBlock block={block} updateBlock={updateBlock} />}
-                  {block.type === "checkbox" && <CheckboxQuestionBlock block={block} updateBlock={updateBlock} />}
-                  {block.type === "openended" && <OpenEndedQuestionBlock block={block} updateBlock={updateBlock} />}
-                  {block.type === "input" && <InputBlock block={block} updateBlock={updateBlock} />}
-                </div>
-
-                <div className="flex flex-col items-center ml-6 space-y-4 opacity-0 group-hover:opacity-100 transition-all">
-                  <button
-                    type="button"
-                    onClick={() => setBlocks(blocks.filter((b) => b.id !== block.id))}
-                    className="p-2.5 text-destructive hover:bg-destructive/10 rounded-xl transition-colors"
-                  >
-                    <Trash2 size={20} />
-                  </button>
-                  <AddBlock
-                    addBlock={(type) => {
-                      const newBlock = {
-                        id: crypto.randomUUID(),
-                        type,
-                        content: "",
-                        options: type === "radio" || type === "checkbox" ? [""] : [],
-                      };
-                      const newBlocks = [...blocks];
-                      newBlocks.splice(index + 1, 0, newBlock as Block);
-                      setBlocks(newBlocks);
-                    }}
-                  />
-                </div>
-              </div>
-            );
-          })}
+                P{i + 1}
+              </Button>
+            ))}
+            <Button variant="outline" size="icon" onClick={() => { setTotalPages(t => t + 1); setActivePage(totalPages + 1); }} className="h-8 w-8 rounded-xl border-dashed">
+              <Plus size={14} />
+            </Button>
+          </div>
+          <div className="text-[10px] font-black uppercase text-muted-foreground tracking-widest px-4 opacity-60">
+            Page {activePage} of {totalPages}
+          </div>
         </div>
 
-        <div className="flex justify-center py-10 border-2 border-dashed rounded-2xl border-muted bg-muted/10">
-          <AddBlock addBlock={addBlock} />
+        <div className="space-y-4">
+          {currentPageBlocks.length > 0 ? (
+            currentPageBlocks.map((block, index) => {
+              const qNumber = getGlobalQuestionNumber(block.id)
+              const isQuestion = questionTypes.includes(block.type)
+
+              return (
+                <div key={block.id} className="space-y-2 group">
+                  <div className="border rounded-2xl p-6 pl-14 pr-12 relative bg-card shadow-sm border-border/60 hover:border-primary/40 transition-all min-h-[100px] flex flex-col justify-center">
+                    {isQuestion ? (
+                      <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center justify-center w-7 h-7 rounded-lg bg-primary/10 text-primary text-[11px] font-bold border border-primary/20">
+                        {String(qNumber).padStart(2, '0')}
+                      </div>
+                    ) : (
+                      <div className="absolute left-6 top-1/2 -translate-y-1/2 w-1 h-12 rounded-full bg-muted group-hover:bg-primary/20 transition-colors" />
+                    )}
+                    <div className="absolute right-3 top-3 opacity-0 group-hover:opacity-100 transition-all">
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={() => removeBlock(block.id)}>
+                        <Trash2 size={16} />
+                      </Button>
+                    </div>
+                    <div className="w-full">
+                      {block.type === "heading" && <HeadingBlock block={block} updateBlock={updateBlock} />}
+                      {block.type === "subheading" && <SubheadingBlock block={block} updateBlock={updateBlock} />}
+                      {block.type === "radio" && <RadioQuestionBlock block={block} updateBlock={updateBlock} />}
+                      {block.type === "checkbox" && <CheckboxQuestionBlock block={block} updateBlock={updateBlock} />}
+                      {block.type === "openended" && <OpenEndedQuestionBlock block={block} updateBlock={updateBlock} />}
+                      {block.type === "input" && <InputBlock block={block} updateBlock={updateBlock} />}
+                    </div>
+                  </div>
+                  <div className="flex justify-center opacity-0 group-hover:opacity-100 transition-all py-1">
+                    <AddBlock addBlock={(type) => addBlockAt(type, index)} />
+                  </div>
+                </div>
+              )
+            })
+          ) : (
+            <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed rounded-3xl bg-muted/5 border-muted/40 text-center opacity-40">
+              <Layers className="mb-2" />
+              <p className="text-sm italic">Empty page.</p>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* RIGHT COLUMN: PREVIEW */}
+      {/* PREVIEW SECTION */}
       <div className="hidden xl:block sticky top-8">
-        <div className="flex items-center justify-between mb-6 px-4">
-          <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-widest text-center w-full">
-            Live Preview
-          </h2>
-        </div>
-
-        <div className="relative border-[12px] border-muted rounded-[3.5rem] p-1 shadow-2xl bg-muted ring-1 ring-border">
-          <div className="w-full aspect-[4/5] bg-background rounded-[2.8rem] p-10 overflow-y-auto custom-scrollbar border border-border">
-            {blocks.length > 0 ? (
-              <SurveyPreview blocks={blocks} />
-            ) : (
-              <div className="h-full flex flex-col items-center justify-center text-center space-y-4 opacity-30">
-                <Plus size={48} className="text-muted-foreground" />
-                <p className="text-sm font-medium">Build your survey to see it here</p>
-              </div>
-            )}
+        <div className="relative border-[10px] border-muted rounded-[3rem] p-1 shadow-2xl bg-muted ring-1 ring-border">
+          <div className="w-full aspect-[9/13] bg-background rounded-[2.5rem] p-8 overflow-y-auto border border-border">
+            <SurveyPreview blocks={blocks} totalPages={totalPages} />
           </div>
-          <div className="absolute top-6 left-1/2 -translate-x-1/2 w-16 h-4 bg-muted rounded-full" />
+          <div className="absolute top-5 left-1/2 -translate-x-1/2 w-12 h-3 bg-muted rounded-full" />
         </div>
       </div>
     </div>
