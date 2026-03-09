@@ -1,20 +1,19 @@
 "use client"
 
 import * as React from "react"
+import { usePage } from "@inertiajs/react"
 import {
-    AudioWaveform,
     BookOpen,
-    Command,
-    Frame,
-    GalleryVerticalEnd,
-    Map,
-    PieChart,
-    Settings2,
     ChartPie,
     ChartNoAxesCombined,
     FileDown,
-    MapPlus,
-    ClipboardList
+    ClipboardList,
+    GalleryVerticalEnd,
+    AudioWaveform,
+    Command,
+    Frame,
+    PieChart,
+    Map,
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -29,131 +28,87 @@ import {
     SidebarRail,
 } from "@/components/ui/sidebar"
 
-// This is sample data.
 const data = {
     user: {
-        name: "shadcn",
+        name: "Researcher",
         email: "m@example.com",
         avatar: "/avatars/shadcn.jpg",
     },
     teams: [
-        {
-            name: "APVMA",
-            logo: GalleryVerticalEnd,
-            plan: "Enterprise",
-        },
-        {
-            name: "HREC",
-            logo: AudioWaveform,
-            plan: "Startup",
-        },
-        {
-            name: "ACQSC",
-            logo: Command,
-            plan: "Free",
-        },
+        { name: "APVMA", logo: GalleryVerticalEnd, plan: "Enterprise" },
+        { name: "HREC", logo: AudioWaveform, plan: "Startup" },
+        { name: "ACQSC", logo: Command, plan: "Free" },
     ],
-    navMain: [
+    projects: [
+        { name: "Design Engineering", url: "#", icon: Frame },
+        { name: "Sales & Marketing", url: "#", icon: PieChart },
+        { name: "Travel", url: "#", icon: Map },
+    ],
+}
+
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+    const { url } = usePage()
+
+    // Dynamically build navMain based on current URL
+    const navMain = [
         {
             title: "Dashboard",
-            url: "#",
+            url: "/dashboard",
             icon: ChartPie,
-            isActive: true,
+            isActive: url.startsWith("/dashboard"),
             items: [
-                {
-                    title: "My Active Surveys",
-                    url: "http://localhost:8000/dashboard",
-                },
-                {
-                    title: " Recent Responses",
-                    url: "#",
-                },
+                { title: "My Active Surveys", url: "/dashboard" },
+                { title: "Recent Responses", url: "#" },
             ],
         },
         {
             title: "Templates",
             url: "#",
             icon: BookOpen,
+            isActive: url.startsWith("/templates"),
             items: [
-                {
-                    title: "All Templates",
-                    url: "#",
-                },
-                {
-                    title: "Create Template",
-                    url: "#",
-                },
+                { title: "All Templates", url: "#" },
+                { title: "Create Template", url: "#" },
             ],
         },
         {
             title: "Survey Runs",
             url: "#",
             icon: ClipboardList,
+            isActive: url.startsWith("/survey-runs"),
             items: [
-                {
-                    title: "Active Surveys",
-                    url: "#",
-                },
-                {
-                    title: "Create Survey Run",
-                    url: "/survey-runs/create",
-                },
-                {
-                    title: "My Archived Surveys",
-                    url: "#",
-                },
+                { title: "Active Surveys", url: "#" },
+                { title: "Create Survey Run", url: "/survey-runs/create" },
+                { title: "My Archived Surveys", url: "#" },
             ],
         },
         {
             title: "Reports",
             url: "#",
             icon: ChartNoAxesCombined,
+            isActive: url.startsWith("/reports"),
             items: [
-                {
-                    title: "Survey Analytics",
-                    url: "#",
-                },
+                { title: "Survey Analytics", url: "#" },
             ],
         },
         {
             title: "Exports",
             url: "#",
             icon: FileDown,
+            isActive: url.startsWith("/exports"),
             items: [
-                {
-                    title: "Export Responses",
-                    url: "#",
-                },
+                { title: "Export Responses", url: "#" },
             ],
         },
-    ],
-    projects: [
-        {
-            name: "Design Engineering",
-            url: "#",
-            icon: Frame,
-        },
-        {
-            name: "Sales & Marketing",
-            url: "#",
-            icon: PieChart,
-        },
-        {
-            name: "Travel",
-            url: "#",
-            icon: Map,
-        },
-    ],
-}
+    ]
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     return (
         <Sidebar collapsible="icon" {...props}>
             <SidebarHeader>
                 <TeamSwitcher teams={data.teams} />
             </SidebarHeader>
             <SidebarContent>
-                <NavMain items={data.navMain} />
+                <NavMain items={navMain} />
                 <NavProjects projects={data.projects} />
             </SidebarContent>
             <SidebarFooter>

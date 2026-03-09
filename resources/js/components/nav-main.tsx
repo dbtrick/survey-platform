@@ -1,6 +1,7 @@
 "use client"
 
 import { ChevronRight, type LucideIcon } from "lucide-react"
+import { Link, usePage } from "@inertiajs/react"
 
 import {
     Collapsible,
@@ -32,6 +33,8 @@ export function NavMain({
         }[]
     }[]
 }) {
+    const { url } = usePage()
+
     return (
         <SidebarGroup>
             <SidebarGroupLabel>Platform</SidebarGroupLabel>
@@ -40,6 +43,7 @@ export function NavMain({
                     <Collapsible
                         key={item.title}
                         asChild
+                        // defaultOpen ensures the group is expanded on page load if isActive is true
                         defaultOpen={item.isActive}
                         className="group/collapsible"
                     >
@@ -55,10 +59,14 @@ export function NavMain({
                                 <SidebarMenuSub>
                                     {item.items?.map((subItem) => (
                                         <SidebarMenuSubItem key={subItem.title}>
-                                            <SidebarMenuSubButton asChild>
-                                                <a href={subItem.url}>
+                                            <SidebarMenuSubButton
+                                                asChild
+                                                isActive={url === subItem.url}
+                                            >
+                                                {/* Use Inertia Link for SPA-like navigation */}
+                                                <Link href={subItem.url}>
                                                     <span>{subItem.title}</span>
-                                                </a>
+                                                </Link>
                                             </SidebarMenuSubButton>
                                         </SidebarMenuSubItem>
                                     ))}
