@@ -22,7 +22,7 @@ export default function CheckboxQuestionBlock({ block, updateBlock }: any) {
   }
 
   return (
-    <div className="border rounded-lg p-4 space-y-4">
+    <div className="space-y-4">
       <Input
         placeholder="Checkbox question title"
         value={block.content}

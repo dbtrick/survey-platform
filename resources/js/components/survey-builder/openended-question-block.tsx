@@ -3,7 +3,7 @@ import { Textarea } from "@/components/ui/textarea"
 
 export default function OpenEndedQuestionBlock({ block, updateBlock }: any) {
   return (
-    <div className="border rounded-lg p-4 space-y-4">
+    <div className="space-y-4">
 
       {/* Question Title */}
       <Input

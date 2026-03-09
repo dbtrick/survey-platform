@@ -37,8 +37,10 @@ export default function SurveyBuilder() {
       id: crypto.randomUUID(),
       type,
       label: presetLabel || "",
-      content: type === "input" ? "" : presetLabel || "",
-      options: type === "radio" || type === "checkbox" ? [""] : [],
+      content: type === "input" ? "Contact Information" : presetLabel || "",
+      options: type === "radio" || type === "checkbox" || type === "input"
+        ? [presetLabel || "Full Name"]
+        : [],
     }
     setBlocks([...blocks, newBlock])
   }

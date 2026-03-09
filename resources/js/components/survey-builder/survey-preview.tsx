@@ -2,6 +2,7 @@ import { useState } from "react"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Textarea } from "@/components/ui/textarea"
+import { Input } from "@/components/ui/input"
 
 export default function SurveyPreview({ blocks }: any) {
   const [responses, setResponses] = useState<any>({})
@@ -139,22 +140,33 @@ export default function SurveyPreview({ blocks }: any) {
           )
         }
 
+        // Inside the blocks.map, replace the 'input' block condition:
+
         if (block.type === "input") {
           return (
-            <div key={block.id} className="space-y-2">
-              <label className="font-medium text-sm">{block.label}</label>
-              <input
-                type="text"
-                className="w-full border rounded px-2 py-1"
-                value={block.content || ""}
-                onChange={(e) =>
-                  setResponses({
-                    ...responses,
-                    [block.id]: e.target.value,
-                  })
-                }
-                placeholder={`Enter ${block.label || "value"}`}
-              />
+            <div key={block.id} className="space-y-4 border p-4 rounded-lg bg-card">
+              {block.content && <h3 className="font-bold text-lg">{block.content}</h3>}
+
+              <div className="grid gap-4">
+                {block.options?.map((optionLabel: string, index: number) => (
+                  <div key={index} className="space-y-1.5">
+                    <label className="font-medium text-sm">
+                      {optionLabel || `Field ${index + 1}`}
+                    </label>
+                    <Input
+                      type="text"
+                      placeholder={`Enter ${optionLabel.toLowerCase() || "response"}...`}
+                      // Store responses using a unique key per field
+                      onChange={(e) =>
+                        setResponses({
+                          ...responses,
+                          [`${block.id}_field_${index}`]: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
           )
         }

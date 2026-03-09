@@ -2,7 +2,7 @@ import { Input } from "@/components/ui/input"
 
 export default function SubheadingBlock({ block, updateBlock }: any) {
   return (
-    <div className="border rounded-lg p-4">
+    <div>
 
       <Input
         className="text-muted-foreground"
