@@ -14,6 +14,7 @@ export default function SurveyPreview({ blocks, totalPages = 1 }: any) {
   const [responses, setResponses] = useState<any>({})
   const [isSubmitted, setIsSubmitted] = useState(false)
 
+  // Safety: sync current view page if total pages changes
   useEffect(() => {
     if (currentViewPage > totalPages) {
       setCurrentViewPage(totalPages > 0 ? totalPages : 1)
@@ -29,19 +30,33 @@ export default function SurveyPreview({ blocks, totalPages = 1 }: any) {
     return idx !== -1 ? idx + 1 : null
   }
 
+  // UPDATED: Generic response handler to keep logic clean
+  const updateResponse = (blockId: string, value: any) => {
+    setResponses((prev: any) => ({
+      ...prev,
+      [blockId]: value
+    }))
+  }
+
   const handleCheckboxChange = (blockId: string, option: string) => {
     const current = responses[blockId] || []
     const next = current.includes(option) ? current.filter((o: any) => o !== option) : [...current, option]
-    setResponses({ ...responses, [blockId]: next })
+    updateResponse(blockId, next)
+  }
+
+  const onFinish = () => {
+    console.log("SURVEY RESPONSES (FRONT-END ONLY):", responses)
+    setIsSubmitted(true)
   }
 
   if (isSubmitted) {
     return (
       <div className="h-full flex flex-col items-center justify-center text-center space-y-6 animate-in zoom-in-95 duration-500">
         <CheckCircle2 size={48} className="text-green-500" />
-        <h2 className="text-2xl font-bold font-mono uppercase tracking-tighter">Submitted</h2>
+        <h2 className="text-2xl font-bold font-mono uppercase tracking-tighter">Preview Finished</h2>
+        <p className="text-xs text-muted-foreground">Responses saved in browser console.</p>
         <Button variant="outline" className="rounded-xl font-bold" onClick={() => { setIsSubmitted(false); setCurrentViewPage(1); setResponses({}); }}>
-          Restart
+          Restart Preview
         </Button>
       </div>
     )
@@ -63,7 +78,7 @@ export default function SurveyPreview({ blocks, totalPages = 1 }: any) {
         {visibleBlocks.map((block: any) => {
           const isQ = questionTypes.includes(block.type)
           const qNum = getGlobalQuestionNumber(block.id)
-          const currentRes = responses[block.id] || []
+          const currentVal = responses[block.id] || ""
 
           return (
             <div key={block.id} className="animate-in fade-in slide-in-from-bottom-2 duration-300">
@@ -77,8 +92,13 @@ export default function SurveyPreview({ blocks, totalPages = 1 }: any) {
                     <p className="font-bold text-lg leading-snug">{block.content || "New Question?"}</p>
                   </div>
 
+                  {/* RADIO (Fixed Persistence) */}
                   {block.type === "radio" && (
-                    <RadioGroup className="pl-7 space-y-3" onValueChange={(v) => setResponses({ ...responses, [block.id]: v })}>
+                    <RadioGroup
+                      className="pl-7 space-y-3"
+                      value={currentVal}
+                      onValueChange={(v) => updateResponse(block.id, v)}
+                    >
                       {block.options?.map((opt: string, i: number) => (
                         <div key={i} className="flex items-center space-x-3">
                           <RadioGroupItem value={opt} id={`p-${block.id}-${i}`} />
@@ -91,19 +111,27 @@ export default function SurveyPreview({ blocks, totalPages = 1 }: any) {
                             <RadioGroupItem value="OTHER_VAL" id={`p-${block.id}-other`} />
                             <label htmlFor={`p-${block.id}-other`} className="text-sm font-medium italic opacity-70 cursor-pointer">Other...</label>
                           </div>
-                          {responses[block.id] === "OTHER_VAL" && <Input className="ml-7 h-9 text-sm max-w-[200px]" placeholder="Please specify" />}
+                          {currentVal === "OTHER_VAL" && (
+                            <Input
+                              className="ml-7 h-9 text-sm max-w-[200px]"
+                              placeholder="Please specify"
+                              value={responses[`${block.id}_other`] || ""}
+                              onChange={(e) => updateResponse(`${block.id}_other`, e.target.value)}
+                            />
+                          )}
                         </div>
                       )}
                     </RadioGroup>
                   )}
 
+                  {/* CHECKBOX (Fixed Persistence) */}
                   {block.type === "checkbox" && (
                     <div className="pl-7 space-y-3">
                       {block.options?.map((opt: string, i: number) => (
                         <div key={i} className="flex items-center space-x-3">
                           <Checkbox
                             id={`p-${block.id}-${i}`}
-                            checked={currentRes.includes(opt)}
+                            checked={(responses[block.id] || []).includes(opt)}
                             onCheckedChange={() => handleCheckboxChange(block.id, opt)}
                           />
                           <label htmlFor={`p-${block.id}-${i}`} className="text-sm font-medium cursor-pointer">{opt}</label>
@@ -114,25 +142,48 @@ export default function SurveyPreview({ blocks, totalPages = 1 }: any) {
                           <div className="flex items-center space-x-3">
                             <Checkbox
                               id={`p-${block.id}-other`}
-                              checked={currentRes.includes("OTHER_VAL")}
+                              checked={(responses[block.id] || []).includes("OTHER_VAL")}
                               onCheckedChange={() => handleCheckboxChange(block.id, "OTHER_VAL")}
                             />
                             <label htmlFor={`p-${block.id}-other`} className="text-sm font-medium italic opacity-70 cursor-pointer">Other...</label>
                           </div>
-                          {currentRes.includes("OTHER_VAL") && <Input className="ml-7 h-9 text-sm max-w-[200px]" placeholder="Please specify" />}
+                          {(responses[block.id] || []).includes("OTHER_VAL") && (
+                            <Input
+                              className="ml-7 h-9 text-sm max-w-[200px]"
+                              placeholder="Please specify"
+                              value={responses[`${block.id}_other`] || ""}
+                              onChange={(e) => updateResponse(`${block.id}_other`, e.target.value)}
+                            />
+                          )}
                         </div>
                       )}
                     </div>
                   )}
 
-                  {block.type === "openended" && <div className="pl-7"><Textarea className="min-h-[100px] rounded-xl resize-none" placeholder="Your answer" /></div>}
+                  {/* OPEN ENDED (Fixed Persistence) */}
+                  {block.type === "openended" && (
+                    <div className="pl-7">
+                      <Textarea
+                        className="min-h-[100px] rounded-xl resize-none"
+                        placeholder="Your answer"
+                        value={currentVal}
+                        onChange={(e) => updateResponse(block.id, e.target.value)}
+                      />
+                    </div>
+                  )}
 
+                  {/* MULTI-INPUT (Fixed Persistence) */}
                   {block.type === "input" && (
                     <div className="pl-7 grid gap-4">
                       {block.options?.map((label: string, i: number) => (
                         <div key={i} className="space-y-1.5">
                           <label className="text-[10px] font-bold uppercase opacity-60 tracking-tighter">{label}</label>
-                          <Input placeholder={`Enter ${label.toLowerCase()}`} className="h-9 rounded-lg" />
+                          <Input
+                            placeholder={`Enter ${label.toLowerCase()}`}
+                            className="h-9 rounded-lg"
+                            value={responses[`${block.id}_${i}`] || ""}
+                            onChange={(e) => updateResponse(`${block.id}_${i}`, e.target.value)}
+                          />
                         </div>
                       ))}
                     </div>
@@ -153,7 +204,7 @@ export default function SurveyPreview({ blocks, totalPages = 1 }: any) {
             Next <ChevronRight className="ml-1 h-4 w-4" />
           </Button>
         ) : (
-          <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white rounded-xl px-6 font-bold" onClick={() => setIsSubmitted(true)}>
+          <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white rounded-xl px-6 font-bold" onClick={onFinish}>
             Finish
           </Button>
         )}
