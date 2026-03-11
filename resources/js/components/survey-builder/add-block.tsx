@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react"
+import { Plus, Heading, Type, Radio, CheckSquare, LayoutGrid, TextCursorInput, AlignLeft } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -12,40 +12,36 @@ type AddBlockProps = {
 }
 
 export default function AddBlock({ addBlock }: AddBlockProps) {
+  const menuItems = [
+    { type: "heading", label: "Heading", icon: Heading },
+    { type: "subheading", label: "Subheading", icon: AlignLeft },
+    { type: "radio", label: "Radio Question", icon: Radio },
+    { type: "checkbox", label: "Checkbox Question", icon: CheckSquare },
+    { type: "grid", label: "Grid / Matrix", icon: LayoutGrid }, // NEW GRID OPTION
+    { type: "openended", label: "Open Ended", icon: Type },
+    { type: "input", label: "Input", icon: TextCursorInput },
+  ]
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+        <button className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors py-2 px-4 rounded-xl hover:bg-muted/50">
           <Plus size={18} />
-          Add block
+          <span className="text-sm font-medium">Add block</span>
         </button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent className="min-w-[200px]">
-        <DropdownMenuItem onClick={() => addBlock("heading")}>
-          Heading
-        </DropdownMenuItem>
-
-        <DropdownMenuItem onClick={() => addBlock("subheading")}>
-          Subheading
-        </DropdownMenuItem>
-
-        <DropdownMenuItem onClick={() => addBlock("radio")}>
-          Radio Question
-        </DropdownMenuItem>
-
-        <DropdownMenuItem onClick={() => addBlock("checkbox")}>
-          Checkbox Question
-        </DropdownMenuItem>
-
-        <DropdownMenuItem onClick={() => addBlock("openended")}>
-          Open Ended
-        </DropdownMenuItem>
-
-        {/* Simplified single Input option */}
-        <DropdownMenuItem onClick={() => addBlock("input")}>
-          Input
-        </DropdownMenuItem>
+      <DropdownMenuContent className="min-w-[200px] rounded-xl p-2 shadow-lg">
+        {menuItems.map((item) => (
+          <DropdownMenuItem
+            key={item.type}
+            onClick={() => addBlock(item.type as BlockType)}
+            className="flex items-center gap-3 rounded-lg cursor-pointer py-2"
+          >
+            <item.icon size={16} className="opacity-60" />
+            {item.label}
+          </DropdownMenuItem>
+        ))}
       </DropdownMenuContent>
     </DropdownMenu>
   )

@@ -21,7 +21,7 @@ export default function SurveyPreview({ blocks, totalPages = 1 }: any) {
     }
   }, [totalPages, currentViewPage])
 
-  const questionTypes = ["radio", "checkbox", "openended", "input"]
+  const questionTypes = ["radio", "checkbox", "openended", "input", "grid"]
   const visibleBlocks = blocks.filter((b: any) => b.page === currentViewPage)
 
   const getGlobalQuestionNumber = (blockId: string) => {
@@ -186,6 +186,57 @@ export default function SurveyPreview({ blocks, totalPages = 1 }: any) {
                           />
                         </div>
                       ))}
+                    </div>
+                  )}
+
+                  {/* Inside the visibleBlocks.map loop, add the Grid case: */}
+
+                  {block.type === "grid" && (
+                    <div className="overflow-x-auto -mx-4 px-4 scrollbar-hide">
+                      <table className="w-full border-separate border-spacing-y-2">
+                        <thead>
+                          <tr>
+                            <th className="text-left text-[10px] uppercase opacity-40 font-black px-2 pb-2">Item</th>
+                            {block.options?.map((opt: string, i: number) => (
+                              <th key={i} className="text-center text-[10px] uppercase opacity-40 font-black px-2 pb-2">
+                                {opt}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {block.rows?.map((row: string, rowIndex: number) => (
+                            <tr key={rowIndex} className="group">
+                              <td className="bg-muted/20 rounded-l-xl px-4 py-3 text-sm font-medium border-y border-l transition-colors group-hover:bg-muted/40">
+                                {row}
+                              </td>
+                              {block.options?.map((opt: string, colIndex: number) => (
+                                <td key={colIndex} className="bg-muted/20 text-center py-3 border-y transition-colors group-hover:bg-muted/40 last:rounded-r-xl last:border-r">
+                                  <input
+                                    type="radio"
+                                    name={`grid-${block.id}-${rowIndex}`}
+                                    className="w-4 h-4 accent-primary cursor-pointer"
+                                    checked={responses[`${block.id}_row_${rowIndex}`] === opt}
+                                    onChange={() => updateResponse(`${block.id}_row_${rowIndex}`, opt)}
+                                  />
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+
+                      {block.hasOther && (
+                        <div className="mt-4 pl-1">
+                          <p className="text-[10px] font-bold uppercase opacity-50 mb-2">Other comments regarding these items:</p>
+                          <Input
+                            className="h-10 text-sm rounded-xl"
+                            placeholder="Please specify..."
+                            value={responses[`${block.id}_other`] || ""}
+                            onChange={(e) => updateResponse(`${block.id}_other`, e.target.value)}
+                          />
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

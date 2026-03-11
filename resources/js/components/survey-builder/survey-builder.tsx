@@ -21,9 +21,11 @@ import SubheadingBlock from "./subheading-block"
 import CheckboxQuestionBlock from "./checkbox-question-block"
 import OpenEndedQuestionBlock from "./openended-question-block"
 import InputBlock from "./input-block"
+import GridQuestionBlock from "./grid-question-block" // NEW
 import SurveyPreview from "./survey-preview"
 
-export type BlockType = "heading" | "subheading" | "radio" | "checkbox" | "openended" | "input"
+// Added 'grid' to BlockType
+export type BlockType = "heading" | "subheading" | "radio" | "checkbox" | "openended" | "input" | "grid"
 
 export type Block = {
   id: string
@@ -32,6 +34,7 @@ export type Block = {
   label?: string
   content?: string
   options?: string[]
+  rows?: string[]
   hasOther?: boolean
 }
 
@@ -40,7 +43,8 @@ export default function SurveyBuilder() {
   const [activePage, setActivePage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
 
-  const questionTypes = ["radio", "checkbox", "openended", "input"]
+  // Added 'grid' to question types for numbering
+  const questionTypes = ["radio", "checkbox", "openended", "input", "grid"]
   const currentPageBlocks = blocks.filter((b) => b.page === activePage)
 
   const getGlobalQuestionNumber = (blockId: string) => {
@@ -54,16 +58,22 @@ export default function SurveyBuilder() {
       id: crypto.randomUUID(),
       type,
       page: activePage,
-      content: "",
-      options: ["radio", "checkbox", "input"].includes(type) ? ["Option 1"] : [],
+      content: type === "grid" ? "Please rate the following items:" : "",
+      // Logic for default options/rows
+      options: ["radio", "checkbox", "input"].includes(type)
+        ? ["Option 1"]
+        : type === "grid"
+          ? ["Agree", "Neutral", "Disagree"]
+          : [],
+      rows: type === "grid"
+        ? ["Item 1", "Item 2"]
+        : [],
       hasOther: false
     }
+
     const newBlocks = [...blocks]
 
-    // Logic: if index is -1, it goes to the end of the page.
-    // Otherwise, it inserts after the specific block index on the current page.
     if (index === -1) {
-      // Find last block of current page or just push to end
       const lastIndexOnPage = blocks.findLastIndex(b => b.page === activePage)
       const insertAt = lastIndexOnPage === -1 ? blocks.length : lastIndexOnPage + 1
       newBlocks.splice(insertAt, 0, newBlock)
@@ -98,10 +108,7 @@ export default function SurveyBuilder() {
 
   return (
     <div className="grid grid-cols-1 xl:grid-cols-[1fr_550px] gap-10 items-start px-4">
-      {/* BUILDER */}
       <div className="space-y-6 w-full">
-
-        {/* PAGE NAV BAR */}
         <div className="flex items-center justify-between bg-card border rounded-2xl p-2 shadow-sm sticky top-0 z-30 backdrop-blur-md bg-card/80">
           <div className="flex items-center gap-2 overflow-x-auto p-1 no-scrollbar">
             {Array.from({ length: totalPages }).map((_, i) => (
@@ -151,7 +158,6 @@ export default function SurveyBuilder() {
           </div>
         </div>
 
-        {/* WORKSPACE */}
         <div className="space-y-4 pb-20">
           {currentPageBlocks.length > 0 ? (
             currentPageBlocks.map((block, index) => {
@@ -182,10 +188,10 @@ export default function SurveyBuilder() {
                       {block.type === "checkbox" && <CheckboxQuestionBlock block={block} updateBlock={updateBlock} />}
                       {block.type === "openended" && <OpenEndedQuestionBlock block={block} updateBlock={updateBlock} />}
                       {block.type === "input" && <InputBlock block={block} updateBlock={updateBlock} />}
+                      {block.type === "grid" && <GridQuestionBlock block={block} updateBlock={updateBlock} />} {/* NEW */}
                     </div>
                   </div>
 
-                  {/* HOVER INSERT (Between blocks) */}
                   <div className="flex justify-center opacity-0 group-hover/block:opacity-100 transition-all py-2 h-10 items-center">
                     <AddBlock addBlock={(type) => addBlockAt(type, index)} />
                   </div>
@@ -199,14 +205,12 @@ export default function SurveyBuilder() {
             </div>
           )}
 
-          {/* PERSISTENT ADD BUTTON (Bottom of page or for empty state) */}
           <div className="flex justify-center pt-4 border-t border-dashed mt-8">
             <AddBlock addBlock={(type) => addBlockAt(type, -1)} />
           </div>
         </div>
       </div>
 
-      {/* PREVIEW */}
       <div className="hidden xl:block sticky top-8">
         <div className="relative border-[10px] border-muted rounded-[3rem] p-1 shadow-2xl bg-muted ring-1 ring-border">
           <div className="w-full aspect-[9/13] bg-background rounded-[2.5rem] p-8 overflow-y-auto border border-border">
