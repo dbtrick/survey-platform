@@ -8,34 +8,64 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { ChevronLeft, ChevronRight, CheckCircle2 } from "lucide-react"
+import { router } from '@inertiajs/react';
 
-export default function SurveyPreview({ blocks, totalPages = 1 }: any) {
+export default function SurveyPreview({ blocks, totalPages = 1, isPublic = false, surveySlug = "" }: any) {
   const [currentViewPage, setCurrentViewPage] = useState(1)
   const [responses, setResponses] = useState<any>({})
   const [isSubmitted, setIsSubmitted] = useState(false)
 
-  // Safety: sync current view page if total pages changes
-  useEffect(() => {
-    if (currentViewPage > totalPages) {
-      setCurrentViewPage(totalPages > 0 ? totalPages : 1)
+  const onFinish = () => {
+    const finalData: any = {};
+
+    blocks.forEach((block: any) => {
+      const primaryValue = responses[block.id];
+      const otherText = responses[`${block.id}_other_text`]?.trim();
+
+      if (block.type === 'radio') {
+        // If Other is selected and text exists, save "Other: [text]"
+        if (primaryValue === 'other') {
+          finalData[block.id] = otherText ? `Other: ${otherText}` : 'Other';
+        } else {
+          finalData[block.id] = primaryValue;
+        }
+      }
+
+      else if (block.type === 'checkbox') {
+        const values = Array.isArray(primaryValue) ? [...primaryValue] : [];
+        // Replace the 'other' string in the array with 'Other: [text]'
+        const processedValues = values.map(val => {
+          if (val === 'other') return otherText ? `Other: ${otherText}` : 'Other';
+          return val;
+        });
+        finalData[block.id] = processedValues;
+      }
+
+      else {
+        // For text inputs, grids, etc., just save as is
+        finalData[block.id] = primaryValue;
+      }
+    });
+
+    if (isPublic && surveySlug) {
+      router.post(`/s/${surveySlug}/submit`, {
+        responses: finalData
+      });
+    } else {
+      console.log("FINAL FORMATTED DATA:", finalData);
+      setIsSubmitted(true);
     }
-  }, [totalPages, currentViewPage])
+  };
+
+  useEffect(() => {
+    if (currentViewPage > totalPages) setCurrentViewPage(totalPages || 1)
+  }, [totalPages])
 
   const questionTypes = ["radio", "checkbox", "openended", "input", "grid"]
   const visibleBlocks = blocks.filter((b: any) => b.page === currentViewPage)
 
-  const getGlobalQuestionNumber = (blockId: string) => {
-    const allQs = blocks.filter((b: any) => questionTypes.includes(b.type))
-    const idx = allQs.findIndex((b: any) => b.id === blockId)
-    return idx !== -1 ? idx + 1 : null
-  }
-
-  // UPDATED: Generic response handler to keep logic clean
   const updateResponse = (blockId: string, value: any) => {
-    setResponses((prev: any) => ({
-      ...prev,
-      [blockId]: value
-    }))
+    setResponses((prev: any) => ({ ...prev, [blockId]: value }))
   }
 
   const handleCheckboxChange = (blockId: string, option: string) => {
@@ -44,20 +74,12 @@ export default function SurveyPreview({ blocks, totalPages = 1 }: any) {
     updateResponse(blockId, next)
   }
 
-  const onFinish = () => {
-    console.log("SURVEY RESPONSES (FRONT-END ONLY):", responses)
-    setIsSubmitted(true)
-  }
-
   if (isSubmitted) {
     return (
-      <div className="h-full flex flex-col items-center justify-center text-center space-y-6 animate-in zoom-in-95 duration-500">
+      <div className="h-full flex flex-col items-center justify-center text-center space-y-6 animate-in zoom-in-95">
         <CheckCircle2 size={48} className="text-green-500" />
-        <h2 className="text-2xl font-bold font-mono uppercase tracking-tighter">Preview Finished</h2>
-        <p className="text-xs text-muted-foreground">Responses saved in browser console.</p>
-        <Button variant="outline" className="rounded-xl font-bold" onClick={() => { setIsSubmitted(false); setCurrentViewPage(1); setResponses({}); }}>
-          Restart Preview
-        </Button>
+        <h2 className="text-xl font-bold">Preview Finished</h2>
+        <Button variant="outline" onClick={() => { setIsSubmitted(false); setResponses({}); setCurrentViewPage(1); }}>Restart</Button>
       </div>
     )
   }
@@ -65,178 +87,79 @@ export default function SurveyPreview({ blocks, totalPages = 1 }: any) {
   return (
     <div className="flex flex-col min-h-full">
       {totalPages > 1 && (
-        <div className="mb-8 space-y-2">
-          <div className="flex justify-between text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-60">
-            <span>Progress</span>
-            <span>{Math.round((currentViewPage / totalPages) * 100)}%</span>
-          </div>
+        <div className="mb-6 space-y-1">
           <Progress value={(currentViewPage / totalPages) * 100} className="h-1" />
         </div>
       )}
 
-      <div className="flex-1 space-y-10 pb-12">
+      <div className="flex-1 space-y-8 pb-10">
         {visibleBlocks.map((block: any) => {
           const isQ = questionTypes.includes(block.type)
-          const qNum = getGlobalQuestionNumber(block.id)
           const currentVal = responses[block.id] || ""
 
           return (
-            <div key={block.id} className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-              {block.type === "heading" && <h1 className="text-2xl font-black">{block.content || "Untitled Page"}</h1>}
-              {block.type === "subheading" && <p className="text-base text-muted-foreground leading-relaxed">{block.content || "Description text."}</p>}
+            <div key={block.id} className="animate-in fade-in slide-in-from-bottom-2">
+              {block.type === "heading" && <h1 className="text-xl font-bold">{block.content || "Untitled"}</h1>}
+              {block.type === "subheading" && <p className="text-sm text-muted-foreground">{block.content}</p>}
 
               {isQ && (
-                <div className="space-y-5">
-                  <div className="flex gap-3 items-start">
-                    <span className="text-primary font-bold pt-1">{qNum}.</span>
-                    <p className="font-bold text-lg leading-snug">{block.content || "New Question?"}</p>
-                  </div>
+                <div className="space-y-4">
+                  <p className="font-semibold text-sm">{block.content || "Question Text"}</p>
 
-                  {/* RADIO (Fixed Persistence) */}
                   {block.type === "radio" && (
-                    <RadioGroup
-                      className="pl-7 space-y-3"
-                      value={currentVal}
-                      onValueChange={(v) => updateResponse(block.id, v)}
-                    >
+                    <RadioGroup className="space-y-2 ml-2" value={currentVal} onValueChange={(v) => updateResponse(block.id, v)}>
                       {block.options?.map((opt: string, i: number) => (
-                        <div key={i} className="flex items-center space-x-3">
-                          <RadioGroupItem value={opt} id={`p-${block.id}-${i}`} />
-                          <label htmlFor={`p-${block.id}-${i}`} className="text-sm font-medium cursor-pointer">{opt}</label>
+                        <div key={i} className="flex items-center space-x-2">
+                          <RadioGroupItem value={opt} id={`r-${block.id}-${i}`} />
+                          <label htmlFor={`r-${block.id}-${i}`} className="text-sm">{opt}</label>
                         </div>
                       ))}
                       {block.hasOther && (
-                        <div className="space-y-3">
-                          <div className="flex items-center space-x-3">
-                            <RadioGroupItem value="OTHER_VAL" id={`p-${block.id}-other`} />
-                            <label htmlFor={`p-${block.id}-other`} className="text-sm font-medium italic opacity-70 cursor-pointer">Other...</label>
+                        <div className="space-y-2">
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="other" id={`r-${block.id}-other`} />
+                            <label htmlFor={`r-${block.id}-other`} className="text-sm">Other</label>
                           </div>
-                          {currentVal === "OTHER_VAL" && (
-                            <Input
-                              className="ml-7 h-9 text-sm max-w-[200px]"
-                              placeholder="Please specify"
-                              value={responses[`${block.id}_other`] || ""}
-                              onChange={(e) => updateResponse(`${block.id}_other`, e.target.value)}
-                            />
+                          {currentVal === "other" && (
+                            <Input className="h-8 ml-6" placeholder="Please specify..." value={responses[`${block.id}_other_text`] || ""} onChange={(e) => updateResponse(`${block.id}_other_text`, e.target.value)} />
                           )}
                         </div>
                       )}
                     </RadioGroup>
                   )}
 
-                  {/* CHECKBOX (Fixed Persistence) */}
                   {block.type === "checkbox" && (
-                    <div className="pl-7 space-y-3">
+                    <div className="space-y-2 ml-2">
                       {block.options?.map((opt: string, i: number) => (
-                        <div key={i} className="flex items-center space-x-3">
-                          <Checkbox
-                            id={`p-${block.id}-${i}`}
-                            checked={(responses[block.id] || []).includes(opt)}
-                            onCheckedChange={() => handleCheckboxChange(block.id, opt)}
-                          />
-                          <label htmlFor={`p-${block.id}-${i}`} className="text-sm font-medium cursor-pointer">{opt}</label>
+                        <div key={i} className="flex items-center space-x-2">
+                          <Checkbox checked={(responses[block.id] || []).includes(opt)} onCheckedChange={() => handleCheckboxChange(block.id, opt)} />
+                          <span className="text-sm">{opt}</span>
                         </div>
                       ))}
                       {block.hasOther && (
-                        <div className="space-y-3 pt-1">
-                          <div className="flex items-center space-x-3">
-                            <Checkbox
-                              id={`p-${block.id}-other`}
-                              checked={(responses[block.id] || []).includes("OTHER_VAL")}
-                              onCheckedChange={() => handleCheckboxChange(block.id, "OTHER_VAL")}
-                            />
-                            <label htmlFor={`p-${block.id}-other`} className="text-sm font-medium italic opacity-70 cursor-pointer">Other...</label>
+                        <div className="space-y-2">
+                          <div className="flex items-center space-x-2">
+                            <Checkbox checked={(responses[block.id] || []).includes("other")} onCheckedChange={() => handleCheckboxChange(block.id, "other")} />
+                            <span className="text-sm">Other</span>
                           </div>
-                          {(responses[block.id] || []).includes("OTHER_VAL") && (
-                            <Input
-                              className="ml-7 h-9 text-sm max-w-[200px]"
-                              placeholder="Please specify"
-                              value={responses[`${block.id}_other`] || ""}
-                              onChange={(e) => updateResponse(`${block.id}_other`, e.target.value)}
-                            />
+                          {(responses[block.id] || []).includes("other") && (
+                            <Input className="h-8 ml-6" placeholder="Please specify..." value={responses[`${block.id}_other_text`] || ""} onChange={(e) => updateResponse(`${block.id}_other_text`, e.target.value)} />
                           )}
                         </div>
                       )}
                     </div>
                   )}
 
-                  {/* OPEN ENDED (Fixed Persistence) */}
-                  {block.type === "openended" && (
-                    <div className="pl-7">
-                      <Textarea
-                        className="min-h-[100px] rounded-xl resize-none"
-                        placeholder="Your answer"
-                        value={currentVal}
-                        onChange={(e) => updateResponse(block.id, e.target.value)}
-                      />
-                    </div>
-                  )}
+                  {block.type === "openended" && <Textarea className="rounded-xl" placeholder="Answer..." value={currentVal} onChange={(e) => updateResponse(block.id, e.target.value)} />}
 
-                  {/* MULTI-INPUT (Fixed Persistence) */}
                   {block.type === "input" && (
-                    <div className="pl-7 grid gap-4">
+                    <div className="grid gap-3">
                       {block.options?.map((label: string, i: number) => (
-                        <div key={i} className="space-y-1.5">
-                          <label className="text-[10px] font-bold uppercase opacity-60 tracking-tighter">{label}</label>
-                          <Input
-                            placeholder={`Enter ${label.toLowerCase()}`}
-                            className="h-9 rounded-lg"
-                            value={responses[`${block.id}_${i}`] || ""}
-                            onChange={(e) => updateResponse(`${block.id}_${i}`, e.target.value)}
-                          />
+                        <div key={i} className="space-y-1">
+                          <label className="text-[10px] uppercase font-bold opacity-50">{label}</label>
+                          <Input className="h-8" value={responses[`${block.id}_${i}`] || ""} onChange={(e) => updateResponse(`${block.id}_${i}`, e.target.value)} />
                         </div>
                       ))}
-                    </div>
-                  )}
-
-                  {/* Inside the visibleBlocks.map loop, add the Grid case: */}
-
-                  {block.type === "grid" && (
-                    <div className="overflow-x-auto -mx-4 px-4 scrollbar-hide">
-                      <table className="w-full border-separate border-spacing-y-2">
-                        <thead>
-                          <tr>
-                            <th className="text-left text-[10px] uppercase opacity-40 font-black px-2 pb-2">Item</th>
-                            {block.options?.map((opt: string, i: number) => (
-                              <th key={i} className="text-center text-[10px] uppercase opacity-40 font-black px-2 pb-2">
-                                {opt}
-                              </th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {block.rows?.map((row: string, rowIndex: number) => (
-                            <tr key={rowIndex} className="group">
-                              <td className="bg-muted/20 rounded-l-xl px-4 py-3 text-sm font-medium border-y border-l transition-colors group-hover:bg-muted/40">
-                                {row}
-                              </td>
-                              {block.options?.map((opt: string, colIndex: number) => (
-                                <td key={colIndex} className="bg-muted/20 text-center py-3 border-y transition-colors group-hover:bg-muted/40 last:rounded-r-xl last:border-r">
-                                  <input
-                                    type="radio"
-                                    name={`grid-${block.id}-${rowIndex}`}
-                                    className="w-4 h-4 accent-primary cursor-pointer"
-                                    checked={responses[`${block.id}_row_${rowIndex}`] === opt}
-                                    onChange={() => updateResponse(`${block.id}_row_${rowIndex}`, opt)}
-                                  />
-                                </td>
-                              ))}
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-
-                      {block.hasOther && (
-                        <div className="mt-4 pl-1">
-                          <p className="text-[10px] font-bold uppercase opacity-50 mb-2">Other comments regarding these items:</p>
-                          <Input
-                            className="h-10 text-sm rounded-xl"
-                            placeholder="Please specify..."
-                            value={responses[`${block.id}_other`] || ""}
-                            onChange={(e) => updateResponse(`${block.id}_other`, e.target.value)}
-                          />
-                        </div>
-                      )}
                     </div>
                   )}
                 </div>
@@ -246,18 +169,12 @@ export default function SurveyPreview({ blocks, totalPages = 1 }: any) {
         })}
       </div>
 
-      <div className="mt-auto pt-6 border-t flex justify-between items-center bg-background/50 backdrop-blur-sm">
-        <Button variant="ghost" size="sm" className="rounded-xl font-bold" disabled={currentViewPage === 1} onClick={() => setCurrentViewPage(currentViewPage - 1)}>
-          <ChevronLeft className="mr-1 h-4 w-4" /> Back
-        </Button>
+      <div className="mt-auto pt-4 border-t flex justify-between">
+        <Button variant="ghost" size="sm" disabled={currentViewPage === 1} onClick={() => setCurrentViewPage(v => v - 1)}>Back</Button>
         {currentViewPage < totalPages ? (
-          <Button size="sm" className="rounded-xl px-6 font-bold" onClick={() => setCurrentViewPage(currentViewPage + 1)}>
-            Next <ChevronRight className="ml-1 h-4 w-4" />
-          </Button>
+          <Button size="sm" onClick={() => setCurrentViewPage(v => v + 1)}>Next</Button>
         ) : (
-          <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white rounded-xl px-6 font-bold" onClick={onFinish}>
-            Finish
-          </Button>
+          <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={onFinish}>Finish</Button>
         )}
       </div>
     </div>
