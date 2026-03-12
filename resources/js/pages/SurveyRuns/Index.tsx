@@ -2,11 +2,10 @@ import AppLayout from "@/layouts/app-layout"
 import { Head, Link, router } from "@inertiajs/react"
 import { Button } from "@/components/ui/button"
 import { BarChart3, Download, ExternalLink, MousePointer2, Trash2 } from "lucide-react"
-
 declare var route: any;
-
 export default function SurveyIndex({ surveys }: any) {
   const handleDelete = (id: number) => {
+    // Updated route name to match web.php
     if (confirm("Are you sure? This will delete all collected responses for this survey.")) {
       router.delete(route('surveys.destroy', id));
     }
@@ -21,7 +20,8 @@ export default function SurveyIndex({ surveys }: any) {
             <h1 className="text-4xl font-black tracking-tight">Active Surveys</h1>
             <p className="text-slate-400 mt-2">Track responses and manage your survey data.</p>
           </div>
-          <Link href={route('surveys.create')}>
+          {/* FIXED: Changed from surveys.create to survey-runs.create */}
+          <Link href={route('survey-runs.create')}>
             <Button className="bg-indigo-600 hover:bg-indigo-700 h-11 px-6 rounded-xl transition-all">
               Create New Survey
             </Button>
@@ -48,7 +48,8 @@ export default function SurveyIndex({ surveys }: any) {
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <a href={`/s/${survey.slug}`} target="_blank" className="p-3 text-slate-500 hover:text-white transition-colors bg-white/5 rounded-xl border border-white/5">
+                  {/* FIXED: Using public show route from web.php */}
+                  <a href={route('surveys.public_show', survey.slug)} target="_blank" className="p-3 text-slate-500 hover:text-white transition-colors bg-white/5 rounded-xl border border-white/5">
                     <ExternalLink size={18} />
                   </a>
 
@@ -57,8 +58,8 @@ export default function SurveyIndex({ surveys }: any) {
                     Analytics
                   </Button>
 
-                  {/* This is our bridge to the next task */}
-                  <Link href={`/exports/${survey.id}`}>
+                  {/* FIXED: Linking to the export options page */}
+                  <Link href={route('exports.show', survey.id)}>
                     <Button className="h-11 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 gap-2">
                       <Download size={18} />
                       Export Data

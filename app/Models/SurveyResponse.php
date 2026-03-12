@@ -9,7 +9,7 @@ class SurveyResponse extends Model
     protected $fillable = ['survey_id', 'answers', 'session_id'];
 
     protected $casts = [
-        'answers' => 'array',
+        'answers' => 'array', // Crucial for treating JSON as a PHP array
     ];
 
     public function survey()

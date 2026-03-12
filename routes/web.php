@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 use App\Http\Controllers\SurveyRunController;
+use App\Http\Controllers\ExportController; // Added this
 
 Route::inertia('/', 'welcome', [
     'canRegister' => Features::enabled(Features::registration()),
@@ -29,10 +30,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/surveys/{survey}', [SurveyRunController::class, 'destroy'])
         ->name('surveys.destroy');
 
-    // Placeholder for Export (Step 2)
-    Route::get('/exports/{survey}', function($survey) {
-        return "Export logic for Survey ID: " . $survey;
-    })->name('exports.show');
+    // --- EXPORT FUNCTIONALITY ---
+    
+    // Show Export Options Page
+    Route::get('/exports/{survey}', [ExportController::class, 'show'])
+        ->name('exports.show');
+
+    // Trigger File Download
+    Route::get('/exports/{survey}/download', [ExportController::class, 'download'])
+        ->name('exports.download');
 });
 
 // --- PUBLIC SURVEY ROUTES (RESPONDENT) ---

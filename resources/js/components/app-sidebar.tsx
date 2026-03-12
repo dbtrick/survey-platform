@@ -55,7 +55,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             title: "Dashboard",
             url: "/dashboard",
             icon: ChartPie,
-            isActive: url.startsWith("/dashboard"),
+            isActive: url === "/dashboard",
             items: [
                 { title: "My Active Surveys", url: "/dashboard" },
                 { title: "Recent Responses", url: "#" },
@@ -73,11 +73,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         },
         {
             title: "Survey Runs",
-            url: "#",
+            url: "/survey-runs",
             icon: ClipboardList,
+            // Section expands if on the list or the create page
             isActive: url.startsWith("/survey-runs"),
             items: [
-                { title: "Active Surveys", url: "#" },
+                { title: "Active Surveys", url: "/survey-runs" },
                 { title: "Create Survey Run", url: "/survey-runs/create" },
                 { title: "My Archived Surveys", url: "#" },
             ],
@@ -93,11 +94,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         },
         {
             title: "Exports",
-            url: "#",
+            url: "/survey-runs",
             icon: FileDown,
-            isActive: url.startsWith("/exports"),
+            // This is the key: it will now expand when the URL starts with /exports
+            isActive: url.startsWith("/exports") || url === "/survey-runs",
             items: [
-                { title: "Export Responses", url: "#" },
+                { title: "Export Responses", url: "/survey-runs" },
             ],
         },
     ]

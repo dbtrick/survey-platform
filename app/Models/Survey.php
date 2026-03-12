@@ -2,24 +2,22 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Survey extends Model
 {
-    use HasFactory;
+    protected $fillable = ['title', 'slug', 'structure'];
 
-    protected $fillable = [
-        'title',
-        'slug',
-        'structure',
-    ];
-
-    /**
-     * The attributes that should be cast.
-     * This converts the JSON database column into a PHP array automatically.
-     */
     protected $casts = [
         'structure' => 'array',
     ];
+
+    /**
+     * Get the responses for the survey.
+     */
+    public function responses(): HasMany
+    {
+        return $this->hasMany(SurveyResponse::class);
+    }
 }
