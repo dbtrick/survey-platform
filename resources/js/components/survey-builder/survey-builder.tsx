@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Trash2, Plus, FilePlus, Layers, AlertCircle } from "lucide-react"
+import { Trash2, Plus, Layers, AlertCircle, Rocket } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   AlertDialog,
@@ -21,10 +21,10 @@ import SubheadingBlock from "./subheading-block"
 import CheckboxQuestionBlock from "./checkbox-question-block"
 import OpenEndedQuestionBlock from "./openended-question-block"
 import InputBlock from "./input-block"
-import GridQuestionBlock from "./grid-question-block" // NEW
+import GridQuestionBlock from "./grid-question-block"
 import SurveyPreview from "./survey-preview"
 
-// Added 'grid' to BlockType
+// 1. Move types to the top so they are available everywhere
 export type BlockType = "heading" | "subheading" | "radio" | "checkbox" | "openended" | "input" | "grid"
 
 export type Block = {
@@ -38,12 +38,15 @@ export type Block = {
   hasOther?: boolean
 }
 
-export default function SurveyBuilder() {
+interface SurveyBuilderProps {
+  onSave?: (blocks: Block[]) => void
+}
+
+export default function SurveyBuilder({ onSave }: SurveyBuilderProps) {
   const [blocks, setBlocks] = useState<Block[]>([])
   const [activePage, setActivePage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
 
-  // Added 'grid' to question types for numbering
   const questionTypes = ["radio", "checkbox", "openended", "input", "grid"]
   const currentPageBlocks = blocks.filter((b) => b.page === activePage)
 
@@ -59,20 +62,16 @@ export default function SurveyBuilder() {
       type,
       page: activePage,
       content: type === "grid" ? "Please rate the following items:" : "",
-      // Logic for default options/rows
       options: ["radio", "checkbox", "input"].includes(type)
         ? ["Option 1"]
         : type === "grid"
           ? ["Agree", "Neutral", "Disagree"]
           : [],
-      rows: type === "grid"
-        ? ["Item 1", "Item 2"]
-        : [],
+      rows: type === "grid" ? ["Item 1", "Item 2"] : [],
       hasOther: false
     }
 
     const newBlocks = [...blocks]
-
     if (index === -1) {
       const lastIndexOnPage = blocks.findLastIndex(b => b.page === activePage)
       const insertAt = lastIndexOnPage === -1 ? blocks.length : lastIndexOnPage + 1
@@ -82,7 +81,6 @@ export default function SurveyBuilder() {
       const globalIndex = blocks.findIndex(b => b.id === currentBlockId)
       newBlocks.splice(globalIndex + 1, 0, newBlock)
     }
-
     setBlocks(newBlocks)
   }
 
@@ -109,6 +107,24 @@ export default function SurveyBuilder() {
   return (
     <div className="grid grid-cols-1 xl:grid-cols-[1fr_550px] gap-10 items-start px-4">
       <div className="space-y-6 w-full">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <div className="bg-primary/10 p-2 rounded-xl">
+              <Layers className="w-5 h-5 text-primary" />
+            </div>
+            <h2 className="font-bold text-lg tracking-tight">Survey Workspace</h2>
+          </div>
+
+          <Button
+            onClick={() => onSave?.(blocks)}
+            disabled={blocks.length === 0}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl px-6 shadow-lg transition-all active:scale-95"
+          >
+            <Rocket className="mr-2 h-4 w-4" />
+            Generate Survey Link
+          </Button>
+        </div>
+
         <div className="flex items-center justify-between bg-card border rounded-2xl p-2 shadow-sm sticky top-0 z-30 backdrop-blur-md bg-card/80">
           <div className="flex items-center gap-2 overflow-x-auto p-1 no-scrollbar">
             {Array.from({ length: totalPages }).map((_, i) => (
@@ -140,12 +156,9 @@ export default function SurveyBuilder() {
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <div className="flex items-center gap-2 text-destructive mb-2">
-                      <AlertCircle size={20} />
-                      <AlertDialogTitle>Delete Page {activePage}?</AlertDialogTitle>
-                    </div>
+                    <AlertDialogTitle>Delete Page {activePage}?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      This deletes this page and its {currentPageBlocks.length} blocks. This cannot be undone.
+                      This deletes this page and its {currentPageBlocks.length} blocks.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -163,7 +176,6 @@ export default function SurveyBuilder() {
             currentPageBlocks.map((block, index) => {
               const qNumber = getGlobalQuestionNumber(block.id)
               const isQuestion = questionTypes.includes(block.type)
-
               return (
                 <div key={block.id} className="group/block relative">
                   <div className="border rounded-2xl p-6 pl-14 pr-12 relative bg-card shadow-sm border-border/60 group-hover/block:border-primary/40 transition-all min-h-[100px] flex flex-col justify-center">
@@ -172,15 +184,13 @@ export default function SurveyBuilder() {
                         {String(qNumber).padStart(2, '0')}
                       </div>
                     ) : (
-                      <div className="absolute left-6 top-1/2 -translate-y-1/2 w-1 h-12 rounded-full bg-muted group-hover/block:bg-primary/20 transition-colors" />
+                      <div className="absolute left-6 top-1/2 -translate-y-1/2 w-1 h-12 rounded-full bg-muted transition-colors" />
                     )}
-
                     <div className="absolute right-3 top-3 opacity-0 group-hover/block:opacity-100 transition-all">
                       <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={() => removeBlock(block.id)}>
                         <Trash2 size={16} />
                       </Button>
                     </div>
-
                     <div className="w-full">
                       {block.type === "heading" && <HeadingBlock block={block} updateBlock={updateBlock} />}
                       {block.type === "subheading" && <SubheadingBlock block={block} updateBlock={updateBlock} />}
@@ -188,10 +198,9 @@ export default function SurveyBuilder() {
                       {block.type === "checkbox" && <CheckboxQuestionBlock block={block} updateBlock={updateBlock} />}
                       {block.type === "openended" && <OpenEndedQuestionBlock block={block} updateBlock={updateBlock} />}
                       {block.type === "input" && <InputBlock block={block} updateBlock={updateBlock} />}
-                      {block.type === "grid" && <GridQuestionBlock block={block} updateBlock={updateBlock} />} {/* NEW */}
+                      {block.type === "grid" && <GridQuestionBlock block={block} updateBlock={updateBlock} />}
                     </div>
                   </div>
-
                   <div className="flex justify-center opacity-0 group-hover/block:opacity-100 transition-all py-2 h-10 items-center">
                     <AddBlock addBlock={(type) => addBlockAt(type, index)} />
                   </div>
@@ -204,7 +213,6 @@ export default function SurveyBuilder() {
               <p className="text-sm italic opacity-40">Page {activePage} is empty.</p>
             </div>
           )}
-
           <div className="flex justify-center pt-4 border-t border-dashed mt-8">
             <AddBlock addBlock={(type) => addBlockAt(type, -1)} />
           </div>
