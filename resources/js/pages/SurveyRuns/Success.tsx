@@ -24,7 +24,7 @@ export default function Success() {
           <Button
             variant="outline"
             className="rounded-2xl border-white/10 bg-white/5 hover:bg-white/10 text-white gap-2"
-            onClick={() => window.location.href = '/'}
+            onClick={() => window.location.href = 'http://localhost:8000/dashboard'}
           >
             <Home size={18} />
             Return Home
