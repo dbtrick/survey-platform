@@ -11,14 +11,31 @@ Route::inertia('/', 'welcome', [
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');
 
-    Route::get('/survey-runs/create', [SurveyRunController::class, 'create'])
-    ->name('survey-runs.create');
+    // --- SURVEY MANAGEMENT (RESEARCHER) ---
+    
+    // List Active Surveys
+    Route::get('/survey-runs', [SurveyRunController::class, 'index'])
+        ->name('survey-runs.index');
 
-    // Researcher: Save the survey
-    Route::post('/surveys', [SurveyRunController::class, 'store'])->name('surveys.store');
+    // Create Survey
+    Route::get('/survey-runs/create', [SurveyRunController::class, 'create'])
+        ->name('survey-runs.create');
+
+    // Save Survey
+    Route::post('/surveys', [SurveyRunController::class, 'store'])
+        ->name('surveys.store');
+
+    // Delete Survey
+    Route::delete('/surveys/{survey}', [SurveyRunController::class, 'destroy'])
+        ->name('surveys.destroy');
+
+    // Placeholder for Export (Step 2)
+    Route::get('/exports/{survey}', function($survey) {
+        return "Export logic for Survey ID: " . $survey;
+    })->name('exports.show');
 });
 
-// PUBLIC: Respondent View (Notice these are OUTSIDE the auth middleware)
+// --- PUBLIC SURVEY ROUTES (RESPONDENT) ---
 Route::get('/s/{slug}', [SurveyRunController::class, 'show'])->name('surveys.public_show');
 Route::post('/s/{slug}/submit', [SurveyRunController::class, 'submit'])->name('surveys.public_submit');
 

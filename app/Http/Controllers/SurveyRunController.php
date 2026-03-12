@@ -11,6 +11,18 @@ use Inertia\Inertia;
 class SurveyRunController extends Controller
 {
     /**
+     * Researcher: List all surveys with response counts
+     */
+    public function index()
+    {
+        return Inertia::render('SurveyRuns/Index', [
+            'surveys' => Survey::withCount('responses')
+                ->orderBy('created_at', 'desc')
+                ->get()
+        ]);
+    }
+
+    /**
      * Researcher: Render the Survey Builder
      */
     public function create()
@@ -23,23 +35,19 @@ class SurveyRunController extends Controller
      */
     public function store(Request $request)
     {
-        // Validate that we have a title and blocks
         $request->validate([
             'title' => 'required|string|max:255',
             'blocks' => 'required|array',
         ]);
 
-        // Generate a unique URL slug
         $slug = Str::slug($request->title) . '-' . Str::lower(Str::random(5));
 
-        // Save to the 'surveys' table
         $survey = Survey::create([
             'title' => $request->title,
             'slug' => $slug,
             'structure' => $request->blocks, 
         ]);
 
-        // Send the link back to the React frontend
         return back()->with('generated_link', url("/s/{$slug}"));
     }
 
@@ -48,7 +56,6 @@ class SurveyRunController extends Controller
      */
     public function show($slug)
     {
-        // Find the survey by its URL slug
         $survey = Survey::where('slug', $slug)->firstOrFail();
 
         return Inertia::render('SurveyRuns/PublicView', [
@@ -63,7 +70,6 @@ class SurveyRunController extends Controller
     {
         $survey = Survey::where('slug', $slug)->firstOrFail();
 
-        // Save to the 'survey_responses' table
         SurveyResponse::create([
             'survey_id' => $survey->id,
             'answers' => $request->responses,
@@ -71,5 +77,15 @@ class SurveyRunController extends Controller
         ]);
 
         return Inertia::render('SurveyRuns/Success');
+    }
+
+    /**
+     * Researcher: Delete a survey and its responses
+     */
+    public function destroy(Survey $survey)
+    {
+        // This will also delete responses if you set up 'onDelete cascade' in migrations
+        $survey->delete();
+        return back();
     }
 }
