@@ -75,31 +75,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             title: "Survey Runs",
             url: "/survey-runs",
             icon: ClipboardList,
-            // Section expands if on the list or the create page
+            // Highlights only when on survey management pages
             isActive: url.startsWith("/survey-runs"),
             items: [
                 { title: "Active Surveys", url: "/survey-runs" },
                 { title: "Create Survey Run", url: "/survey-runs/create" },
-                { title: "My Archived Surveys", url: "#" },
-            ],
-        },
-        {
-            title: "Reports",
-            url: "#",
-            icon: ChartNoAxesCombined,
-            isActive: url.startsWith("/reports"),
-            items: [
-                { title: "Survey Analytics", url: "#" },
             ],
         },
         {
             title: "Exports",
-            url: "/survey-runs",
+            url: "/exports",
             icon: FileDown,
-            // This is the key: it will now expand when the URL starts with /exports
-            isActive: url.startsWith("/exports") || url === "/survey-runs",
+            isActive: url.startsWith("/exports"),
             items: [
-                { title: "Export Responses", url: "/survey-runs" },
+                { title: "Export Responses", url: "/exports" },
             ],
         },
     ]

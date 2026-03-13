@@ -61,9 +61,13 @@ export function NavMain({
                                         <SidebarMenuSubItem key={subItem.title}>
                                             <SidebarMenuSubButton
                                                 asChild
-                                                isActive={url === subItem.url}
+                                                isActive={
+                                                    // If the URL is exactly the subItem URL
+                                                    url === subItem.url ||
+                                                    // OR if we are on a deeper path of exports (e.g., /exports/14)
+                                                    (subItem.url === "/exports" && url.startsWith("/exports/"))
+                                                }
                                             >
-                                                {/* Use Inertia Link for SPA-like navigation */}
                                                 <Link href={subItem.url}>
                                                     <span>{subItem.title}</span>
                                                 </Link>

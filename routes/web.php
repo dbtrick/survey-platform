@@ -32,11 +32,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // --- EXPORT FUNCTIONALITY ---
     
-    // Show Export Options Page
+    // 1. Add this: The main list of surveys for exporting
+    Route::get('/exports', [ExportController::class, 'index'])
+        ->name('exports.index');
+
+    // 2. Existing routes
     Route::get('/exports/{survey}', [ExportController::class, 'show'])
         ->name('exports.show');
 
-    // Trigger File Download
     Route::get('/exports/{survey}/download', [ExportController::class, 'download'])
         ->name('exports.download');
 });

@@ -43,6 +43,7 @@ class SurveyRunController extends Controller
         $slug = Str::slug($request->title) . '-' . Str::lower(Str::random(5));
 
         $survey = Survey::create([
+            'user_id' => auth()->id(),
             'title' => $request->title,
             'slug' => $slug,
             'structure' => $request->blocks, 

@@ -1,6 +1,8 @@
-import AppLayout from "../../resources/js/layouts/app-layout"
+// resources/js/Pages/Exports/Show.tsx
+import AppLayout from "@/layouts/app-layout" // Using the @ alias
 import { Head, Link } from "@inertiajs/react"
-import { Button } from "../../resources/js/components/ui/button"
+import { Button } from "@/components/ui/button"
+// ...
 import { FileDown, Table, FileText, ArrowLeft, Info } from "lucide-react"
 
 declare var route: any;
