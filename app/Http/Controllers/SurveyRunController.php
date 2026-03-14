@@ -89,4 +89,60 @@ class SurveyRunController extends Controller
         $survey->delete();
         return back();
     }
+
+    public function analytics(Survey $survey)
+{
+    // Load responses
+    $responses = $survey->responses;
+    $total = $responses->count();
+    $charts = [];
+
+    foreach ($survey->structure as $block) {
+        // We only generate charts for quantitative types
+        if (in_array($block['type'], ['radio', 'checkbox'])) {
+            $counts = [];
+            $others = [];
+            $blockId = $block['id'];
+
+            foreach ($responses as $res) {
+                $answer = $res->answers[$blockId] ?? null;
+
+                // Handle Multiple Selection (Checkboxes)
+                if (is_array($answer)) {
+                    foreach ($answer as $choice) {
+                        $counts[$choice] = ($counts[$choice] ?? 0) + 1;
+                    }
+                } 
+                // Handle Single Selection (Radio)
+                elseif ($answer) {
+                    $counts[$answer] = ($counts[$answer] ?? 0) + 1;
+                }
+
+                // Check for "Other" text input
+                if (isset($res->answers[$blockId . '_other'])) {
+                    $others[] = $res->answers[$blockId . '_other'];
+                }
+            }
+
+            // Format for Recharts
+            $formattedData = [];
+            foreach ($counts as $label => $value) {
+                $formattedData[] = ['name' => $label, 'value' => $value];
+            }
+
+            $charts[] = [
+                'question' => $block['content'] ?? 'Untitled Question',
+                'type' => $block['type'],
+                'data' => $formattedData,
+                'other_responses' => array_filter($others)
+            ];
+        }
+    }
+
+    return Inertia::render('SurveyRuns/Analytics', [
+        'survey' => $survey,
+        'total' => $total,
+        'charts' => $charts
+    ]);
+}
 }

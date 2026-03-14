@@ -55,16 +55,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             title: "Dashboard",
             url: "/dashboard",
             icon: ChartPie,
-            isActive: url === "/dashboard",
+            isActive: url.startsWith("/dashboard"), // Using startsWith for better child-matching
             items: [
-                { title: "Recent Responses", url: "/dashboard" }, // The "Live" view
+                { title: "Platform Overview", url: "/dashboard" },
+                // This acts as a 'hub' for insights
+                { title: "Survey Analytics", url: "/survey-runs" },
             ],
         },
         {
             title: "Survey Management",
             url: "/survey-runs",
             icon: ClipboardList,
-            isActive: url.startsWith("/survey-runs"),
+            isActive: url.startsWith("/survey-runs") && !url.includes("analytics"),
             items: [
                 { title: "All Surveys", url: "/survey-runs" },
                 { title: "Create New", url: "/survey-runs/create" },

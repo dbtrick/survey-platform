@@ -13,6 +13,8 @@ Route::inertia('/', 'welcome', [
 Route::middleware(['auth', 'verified'])->group(function () {
     // UPDATED: Now points to the Controller
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/survey-runs/{survey}/analytics', [SurveyRunController::class, 'analytics'])
+    ->name('survey-runs.analytics');
 
     // --- SURVEY MANAGEMENT ---
     Route::get('/survey-runs', [SurveyRunController::class, 'index'])->name('survey-runs.index');

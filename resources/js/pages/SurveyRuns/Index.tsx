@@ -53,10 +53,13 @@ export default function SurveyIndex({ surveys }: any) {
                     <ExternalLink size={18} />
                   </a>
 
-                  <Button variant="outline" className="h-11 rounded-xl border-white/10 bg-white/5 hover:bg-white/10 text-white gap-2">
-                    <BarChart3 size={18} />
-                    Analytics
-                  </Button>
+                  {/* Find the Analytics Button in your loop and update it to a Link */}
+                  <Link href={route('survey-runs.analytics', survey.id)}>
+                    <Button variant="outline" className="h-11 rounded-xl border-white/10 bg-white/5 hover:bg-white/10 text-white gap-2">
+                      <BarChart3 size={18} />
+                      Analytics
+                    </Button>
+                  </Link>
 
                   {/* FIXED: Linking to the export options page */}
                   <Link href={route('exports.show', survey.id)}>
