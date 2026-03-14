@@ -57,38 +57,26 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             icon: ChartPie,
             isActive: url === "/dashboard",
             items: [
-                { title: "My Active Surveys", url: "/dashboard" },
-                { title: "Recent Responses", url: "#" },
+                { title: "Recent Responses", url: "/dashboard" }, // The "Live" view
             ],
         },
         {
-            title: "Templates",
-            url: "#",
-            icon: BookOpen,
-            isActive: url.startsWith("/templates"),
-            items: [
-                { title: "All Templates", url: "#" },
-                { title: "Create Template", url: "#" },
-            ],
-        },
-        {
-            title: "Survey Runs",
+            title: "Survey Management",
             url: "/survey-runs",
             icon: ClipboardList,
-            // Highlights only when on survey management pages
             isActive: url.startsWith("/survey-runs"),
             items: [
-                { title: "Active Surveys", url: "/survey-runs" },
-                { title: "Create Survey Run", url: "/survey-runs/create" },
+                { title: "All Surveys", url: "/survey-runs" },
+                { title: "Create New", url: "/survey-runs/create" },
             ],
         },
         {
-            title: "Exports",
+            title: "Data Exports",
             url: "/exports",
             icon: FileDown,
             isActive: url.startsWith("/exports"),
             items: [
-                { title: "Export Responses", url: "/exports" },
+                { title: "Download Center", url: "/exports" },
             ],
         },
     ]
@@ -100,7 +88,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </SidebarHeader>
             <SidebarContent>
                 <NavMain items={navMain} />
-                <NavProjects projects={data.projects} />
+                {/* <NavProjects projects={data.projects} /> */}
             </SidebarContent>
             <SidebarFooter>
                 <NavUser />
