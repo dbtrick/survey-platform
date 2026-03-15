@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class SurveyRunController extends Controller
 {
@@ -44,7 +45,7 @@ class SurveyRunController extends Controller
         $slug = Str::slug($request->title) . '-' . Str::lower(Str::random(5));
 
         $survey = Survey::create([
-            'user_id' => auth()->id(),
+            'user_id' => Auth::id(),
             'title' => $request->title,
             'slug' => $slug,
             'structure' => $request->blocks, 
@@ -91,21 +92,18 @@ class SurveyRunController extends Controller
         return back();
     }
 
-   public function analytics(Survey $survey)
+    public function analytics(Survey $survey)
 {
     $responses = $survey->responses;
     $total = $responses->count();
     
-    // 1. Calculate Survey-Specific Stats
     $stats = [
         'total' => $total,
         'new_today' => $survey->responses()->whereDate('created_at', today())->count(),
-        // Simple completion logic: if they reached the last question in your JSON structure
         'completion_rate' => $total > 0 ? 100 : 0, 
         'avg_per_day' => $total > 0 ? round($total / max(1, $survey->created_at->diffInDays(now())), 1) : 0,
     ];
 
-    // 2. Trend data for THIS survey only
     $chartData = $survey->responses()
         ->select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as total'))
         ->groupBy('date')
@@ -116,18 +114,18 @@ class SurveyRunController extends Controller
             'responses' => $item->total,
         ]);
 
-    // 3. Question breakdown logic (same as before)
     $questionCharts = [];
     foreach ($survey->structure as $block) {
+        $blockId = $block['id'];
+        
+        // --- RADIO & CHECKBOX ---
         if (in_array($block['type'], ['radio', 'checkbox'])) {
             $counts = [];
-            $blockId = $block['id'];
             foreach ($responses as $res) {
                 $answer = $res->answers[$blockId] ?? null;
-                if (is_array($answer)) {
-                    foreach ($answer as $choice) $counts[$choice] = ($counts[$choice] ?? 0) + 1;
-                } elseif ($answer) {
-                    $counts[$answer] = ($counts[$answer] ?? 0) + 1;
+                $answersArray = is_array($answer) ? $answer : ($answer ? [$answer] : []);
+                foreach ($answersArray as $choice) {
+                    $counts[$choice] = ($counts[$choice] ?? 0) + 1;
                 }
             }
             
@@ -138,9 +136,55 @@ class SurveyRunController extends Controller
 
             $questionCharts[] = [
                 'question' => $block['content'],
+                'type' => 'simple',
                 'data' => $formattedData,
             ];
         }
+
+        // --- GRID (FIXED FOR COMBINED KEYS) ---
+if ($block['type'] === 'grid') {
+    $options = $block['options'] ?? [];
+    $rows = $block['rows'] ?? [];
+    $blockId = $block['id']; // This is the 'e4ff33e7...' part
+    $gridData = [];
+
+    foreach ($rows as $rowIndex => $rowName) {
+        $rowEntry = ['row' => $rowName];
+        
+        // Initialize all options to 0
+        foreach ($options as $opt) { 
+            if ($opt) $rowEntry[trim($opt)] = 0; 
+        }
+
+        foreach ($responses as $res) {
+            // Your DB saves it as "blockId_rowName"
+            $lookupKey = $blockId . '_' . $rowName;
+            
+            // Get the value from the flat answers array
+            $val = $res->answers[$lookupKey] ?? null;
+
+            if ($val !== null) {
+                // Map numeric index to string if needed
+                if (is_numeric($val) && isset($options[$val])) { 
+                    $val = $options[$val]; 
+                }
+                
+                $cleanVal = trim($val);
+                if (isset($rowEntry[$cleanVal])) {
+                    $rowEntry[$cleanVal]++;
+                }
+            }
+        }
+        $gridData[] = $rowEntry;
+    }
+
+    $questionCharts[] = [
+        'question' => $block['content'],
+        'type' => 'grid_stacked',
+        'options' => $options,
+        'data' => $gridData,
+    ];
+}
     }
 
     return Inertia::render('SurveyRuns/Analytics', [

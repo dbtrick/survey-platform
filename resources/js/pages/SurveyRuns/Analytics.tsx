@@ -1,19 +1,19 @@
 import AppLayout from "@/layouts/app-layout";
 import { Head, Link } from "@inertiajs/react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, LabelList, Legend } from "recharts";
 import { ArrowLeft, Users, Calendar, Zap, BarChart3 } from "lucide-react";
 
 declare var route: any;
 
-const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#3b82f6'];
+const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#3b82f6', '#ec4899', '#8b5cf6'];
 
 export default function Analytics({ survey, stats, chartData, questionCharts }: any) {
   return (
     <AppLayout>
       <Head title={`Insights - ${survey.title}`} />
       <div className="p-8 max-w-7xl mx-auto space-y-8">
-        {/* Header */}
+        {/* Header and Stats Cards remain the same as your original code */}
         <div className="flex justify-between items-start">
           <div className="space-y-1">
             <Link href={route('survey-runs.index')} className="text-slate-500 hover:text-white flex items-center gap-2 text-sm mb-4">
@@ -24,7 +24,6 @@ export default function Analytics({ survey, stats, chartData, questionCharts }: 
           </div>
         </div>
 
-        {/* 4 Cards (Mirroring Platform Overview) */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <StatCard title="Total Sample" value={stats.total} icon={<Users size={20} className="text-indigo-500" />} subText="Total responses collected" />
           <StatCard title="New Today" value={stats.new_today} icon={<Zap size={20} className="text-amber-500" />} subText="Received since midnight" />
@@ -32,11 +31,10 @@ export default function Analytics({ survey, stats, chartData, questionCharts }: 
           <StatCard title="Completion" value={`${stats.completion_rate}%`} icon={<BarChart3 size={20} className="text-sky-500" />} subText="Successful submissions" />
         </div>
 
-        {/* Main Trend Chart (The "Information about selected survey") */}
+        {/* Main Trend Chart */}
         <Card className="bg-[#0c0c0e] border-white/5 rounded-[2rem]">
           <CardHeader>
             <CardTitle className="text-white text-lg">Response Timeline</CardTitle>
-            <CardDescription>How this specific survey performed over time.</CardDescription>
           </CardHeader>
           <CardContent className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
@@ -60,22 +58,43 @@ export default function Analytics({ survey, stats, chartData, questionCharts }: 
         {/* Individual Question Insights */}
         <div className="grid gap-6 lg:grid-cols-2">
           {questionCharts.map((q: any, i: number) => (
-            <Card key={i} className="bg-[#0c0c0e] border-white/5 rounded-[2rem]">
+            <Card key={i} className={`bg-[#0c0c0e] border-white/5 rounded-[2rem] ${q.type === 'grid_stacked' ? 'lg:col-span-2' : ''}`}>
               <CardHeader>
                 <CardTitle className="text-white text-sm font-medium leading-relaxed">{q.question}</CardTitle>
               </CardHeader>
-              <CardContent className="h-[250px]">
+              <CardContent className={q.type === 'grid_stacked' ? 'h-[400px]' : 'h-[250px]'}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={q.data} layout="vertical">
-                    <XAxis type="number" hide />
-                    <YAxis dataKey="name" type="category" stroke="#64748b" fontSize={10} width={80} />
-                    <Tooltip contentStyle={{ backgroundColor: '#0c0c0e', border: '1px solid #ffffff10', borderRadius: '12px' }} />
-                    <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={20}>
-                      {q.data.map((_: any, index: number) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  {q.type === 'grid_stacked' ? (
+                    <BarChart data={q.data} layout="vertical" margin={{ left: 40, right: 40 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" horizontal={true} vertical={false} />
+                      <XAxis type="number" hide />
+                      <YAxis dataKey="row" type="category" stroke="#94a3b8" fontSize={11} width={120} tickLine={false} axisLine={false} />
+                      <Tooltip
+                        cursor={{ fill: '#ffffff05' }}
+                        contentStyle={{ backgroundColor: '#0c0c0e', border: '1px solid #ffffff10', borderRadius: '12px' }}
+                      />
+                      <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px' }} />
+                      {q.options.map((option: string, index: number) => (
+                        <Bar key={option} dataKey={option} stackId="a" fill={COLORS[index % COLORS.length]} barSize={30}>
+                          <LabelList dataKey={option} position="center" content={(props: any) => {
+                            const { x, y, width, value } = props;
+                            return value > 0 ? <text x={x + width / 2} y={y + 18} fill="#fff" fontSize={10} textAnchor="middle">{value}</text> : null;
+                          }} />
+                        </Bar>
                       ))}
-                    </Bar>
-                  </BarChart>
+                    </BarChart>
+                  ) : (
+                    <BarChart data={q.data} layout="vertical">
+                      <XAxis type="number" hide />
+                      <YAxis dataKey="name" type="category" stroke="#64748b" fontSize={10} width={80} />
+                      <Tooltip contentStyle={{ backgroundColor: '#0c0c0e', border: '1px solid #ffffff10', borderRadius: '12px' }} />
+                      <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={20}>
+                        {q.data.map((_: any, index: number) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  )}
                 </ResponsiveContainer>
               </CardContent>
             </Card>
@@ -86,6 +105,7 @@ export default function Analytics({ survey, stats, chartData, questionCharts }: 
   );
 }
 
+// StatCard component stays the same
 function StatCard({ title, value, icon, subText }: any) {
   return (
     <Card className="bg-[#0c0c0e] border-white/5 rounded-[2rem]">
