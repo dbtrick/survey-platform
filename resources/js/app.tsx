@@ -11,7 +11,7 @@ createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
     resolve: (name) =>
         resolvePageComponent(
-            `./pages/${name}.tsx`,
+            `./pages/${name}.tsx`, // Note the lowercase "p" in "pages"
             import.meta.glob('./pages/**/*.tsx'),
         ),
     setup({ el, App, props }) {

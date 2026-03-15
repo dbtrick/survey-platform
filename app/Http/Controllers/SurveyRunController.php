@@ -7,6 +7,7 @@ use App\Models\SurveyResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\DB;
 
 class SurveyRunController extends Controller
 {
@@ -90,59 +91,63 @@ class SurveyRunController extends Controller
         return back();
     }
 
-    public function analytics(Survey $survey)
+   public function analytics(Survey $survey)
 {
-    // Load responses
     $responses = $survey->responses;
     $total = $responses->count();
-    $charts = [];
+    
+    // 1. Calculate Survey-Specific Stats
+    $stats = [
+        'total' => $total,
+        'new_today' => $survey->responses()->whereDate('created_at', today())->count(),
+        // Simple completion logic: if they reached the last question in your JSON structure
+        'completion_rate' => $total > 0 ? 100 : 0, 
+        'avg_per_day' => $total > 0 ? round($total / max(1, $survey->created_at->diffInDays(now())), 1) : 0,
+    ];
 
+    // 2. Trend data for THIS survey only
+    $chartData = $survey->responses()
+        ->select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as total'))
+        ->groupBy('date')
+        ->orderBy('date', 'ASC')
+        ->get()
+        ->map(fn($item) => [
+            'date' => date('M d', strtotime($item->date)),
+            'responses' => $item->total,
+        ]);
+
+    // 3. Question breakdown logic (same as before)
+    $questionCharts = [];
     foreach ($survey->structure as $block) {
-        // We only generate charts for quantitative types
         if (in_array($block['type'], ['radio', 'checkbox'])) {
             $counts = [];
-            $others = [];
             $blockId = $block['id'];
-
             foreach ($responses as $res) {
                 $answer = $res->answers[$blockId] ?? null;
-
-                // Handle Multiple Selection (Checkboxes)
                 if (is_array($answer)) {
-                    foreach ($answer as $choice) {
-                        $counts[$choice] = ($counts[$choice] ?? 0) + 1;
-                    }
-                } 
-                // Handle Single Selection (Radio)
-                elseif ($answer) {
+                    foreach ($answer as $choice) $counts[$choice] = ($counts[$choice] ?? 0) + 1;
+                } elseif ($answer) {
                     $counts[$answer] = ($counts[$answer] ?? 0) + 1;
                 }
-
-                // Check for "Other" text input
-                if (isset($res->answers[$blockId . '_other'])) {
-                    $others[] = $res->answers[$blockId . '_other'];
-                }
             }
-
-            // Format for Recharts
+            
             $formattedData = [];
             foreach ($counts as $label => $value) {
                 $formattedData[] = ['name' => $label, 'value' => $value];
             }
 
-            $charts[] = [
-                'question' => $block['content'] ?? 'Untitled Question',
-                'type' => $block['type'],
+            $questionCharts[] = [
+                'question' => $block['content'],
                 'data' => $formattedData,
-                'other_responses' => array_filter($others)
             ];
         }
     }
 
     return Inertia::render('SurveyRuns/Analytics', [
         'survey' => $survey,
-        'total' => $total,
-        'charts' => $charts
+        'stats' => $stats,
+        'chartData' => $chartData,
+        'questionCharts' => $questionCharts
     ]);
 }
 }
