@@ -13,7 +13,7 @@ export default function Analytics({ survey, stats, chartData, questionCharts }: 
     <AppLayout>
       <Head title={`Insights - ${survey.title}`} />
       <div className="p-8 max-w-7xl mx-auto space-y-8">
-        {/* Header and Stats Cards remain the same as your original code */}
+        {/* Header */}
         <div className="flex justify-between items-start">
           <div className="space-y-1">
             <Link href={route('survey-runs.index')} className="text-slate-500 hover:text-white flex items-center gap-2 text-sm mb-4">
@@ -24,6 +24,7 @@ export default function Analytics({ survey, stats, chartData, questionCharts }: 
           </div>
         </div>
 
+        {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <StatCard title="Total Sample" value={stats.total} icon={<Users size={20} className="text-indigo-500" />} subText="Total responses collected" />
           <StatCard title="New Today" value={stats.new_today} icon={<Zap size={20} className="text-amber-500" />} subText="Received since midnight" />
@@ -84,14 +85,19 @@ export default function Analytics({ survey, stats, chartData, questionCharts }: 
                       ))}
                     </BarChart>
                   ) : (
-                    <BarChart data={q.data} layout="vertical">
-                      <XAxis type="number" hide />
-                      <YAxis dataKey="name" type="category" stroke="#64748b" fontSize={10} width={80} />
-                      <Tooltip contentStyle={{ backgroundColor: '#0c0c0e', border: '1px solid #ffffff10', borderRadius: '12px' }} />
-                      <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={20}>
+                    <BarChart data={q.data} layout="vertical" margin={{ left: 20, right: 40 }}>
+                      <XAxis type="number" hide domain={[0, 'dataMax + 1']} />
+                      <YAxis dataKey="name" type="category" stroke="#64748b" fontSize={10} width={100} tickLine={false} axisLine={false} />
+                      <Tooltip
+                        cursor={{ fill: '#ffffff05' }}
+                        contentStyle={{ backgroundColor: '#0c0c0e', border: '1px solid #ffffff10', borderRadius: '12px', color: '#fff' }}
+                        itemStyle={{ color: '#fff' }}
+                      />
+                      <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={20} isAnimationActive={true}>
                         {q.data.map((_: any, index: number) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} className="hover:opacity-80 transition-opacity" />
                         ))}
+                        <LabelList dataKey="value" position="right" style={{ fill: '#94a3b8', fontSize: '12px', fontWeight: 'bold' }} />
                       </Bar>
                     </BarChart>
                   )}
@@ -105,7 +111,6 @@ export default function Analytics({ survey, stats, chartData, questionCharts }: 
   );
 }
 
-// StatCard component stays the same
 function StatCard({ title, value, icon, subText }: any) {
   return (
     <Card className="bg-[#0c0c0e] border-white/5 rounded-[2rem]">
