@@ -1,71 +1,56 @@
-# 📝 SurveyCore: Premium Research & Survey Engine
+# 📝 SurveyCore: Researcher's Edition
 
-A high-performance, minimal survey management platform built with **Inertia.js**, **React**, and **Tailwind CSS**. Designed for researchers who demand precision, speed, and a high-fidelity user experience.
+SurveyCore is a high-performance, minimal survey engine built on the **Laravel with React Starter Kit**. Designed to eliminate the friction between designing a study and collecting actionable data, it utilizes a **Premium Sharp** UI and **OKLCH** color accuracy for a neutral, distraction-free environment.
+
+---
+
+## 🧭 Platform Navigation
+
+### 📁 Dashboard
+The Dashboard is your research command center. It provides a high-level summary of account activity, showing global performance metrics at a glance.
+
+* **Platform Overview**: A birds-eye view of your total surveys, cumulative response counts, and system health status.
+* **Survey Analytics**: Aggregated data visualization across all active projects to help identify trends before the study concludes.
 
 
 
 ---
 
-## 🔬 Researcher's Workflow
-SurveyCore is engineered to mirror the scientific survey lifecycle—moving seamlessly from hypothesis design to actionable data synthesis.
+### 📁 Survey Management
+The workspace where research instruments are built, refined, and deployed.
 
-### 1. Architectural Phase (Design)
-The `SurveyBuilder` allows researchers to construct structured instruments with surgical precision.
-* **Standardized Scales**: Utilize the **Grid/Matrix system** to measure Likert scales or frequency with consistent visual spacing and zero bias.
-* **Input Validation**: Define mandatory fields to ensure data integrity and reduce non-response bias.
-* **Cognitive Load Reduction**: The "Premium Sharp" UI keeps the focus on question phrasing rather than fighting the interface.
-
-### 2. Validation Phase (Preview)
-Before deployment, simulate the participant experience to ensure methodological soundness.
-* **Visual Neutrality**: The "Minimal Blue" theme (OKLCH-based) provides a professional, unbiased environment for respondents.
-* **Cross-Device Audit**: Seamlessly verify how complex matrix questions collapse for mobile participants to maintain accessibility standards.
-
-### 3. Distribution Phase (Deployment)
-Transition from builder to field in a single click.
-* **Immutable Slugs**: Generate unique, public-facing URLs instantly.
-* **Clipboard Sync**: Quick-copy tools for rapid distribution via email, LMS, or social channels.
+* **All Surveys**: A sharp, organized list of your existing projects. From here, you can manage active links, monitor real-time progress, or archive completed studies.
 
 
+* **Create New**: Access the **SurveyBuilder**. A modular interface where you can architect everything from simple text questions to complex, multi-variable matrix grids.
 
-### 4. Collection & Monitoring
-Track the health of your study in real-time.
-* **Sample Size Tracking**: Monitor your $N$ (response count) at a glance from the primary dashboard.
-* **Real-time Synchronization**: Responses are logged instantly, allowing for mid-study progress audits.
 
-### 5. Analysis & Synthesis (Export)
-The final stage involves preparing data for deep-dive statistical analysis.
-* **Clean Data Architecture**: Standardized JSON/CSV-ready structures for easy import into R, SPSS, or Python (Pandas).
-* **High-Level Analytics**: Get immediate descriptive statistics before diving into raw data sets.
+---
+
+### 📁 Data Exports
+The final stage of the research workflow—moving from data collection to statistical synthesis.
+
+* **Download Center**: Generate and access raw data files. Designed for perfect compatibility with **R, SPSS, Python (Pandas), and Excel**, ensuring your data is ready for rigorous analysis immediately.
 
 
 
 ---
 
-## ✨ Key Features
+## 🛠️ Installation & Setup Guide
 
-* **OKLCH Color Precision**: Utilizing the `oklch` color space for ultra-consistent "Minimal Blue" branding.
-* **Premium Sharp UI**: High-contrast headers and architectural borders for a professional "SaaS" feel.
-* **Responsive Matrix**: A custom-engineered Grid system that remains readable on any screen size.
-* **Tactile Interactivity**: Smooth `rounded-xl` corners and `scale-98` active states for a premium, responsive feel.
-
----
-
-## 🛠️ Technical Stack
-
-| Technology | Role |
-| :--- | :--- |
-| **Laravel 11** | Robust Backend & API Management |
-| **Inertia.js** | The bridge for a seamless Single Page App (SPA) experience |
-| **React 18** | High-performance state management for the Builder |
-| **Tailwind CSS** | Precision styling with OKLCH variable support |
-| **Lucide Icons** | Consistent, minimal iconography |
+### 1. Prerequisites
+Ensure your local environment meets these requirements:
+* **XAMPP**: Provides the local Apache server and MySQL database.
+* **PHP (8.2+)**: Required for Laravel 11.
+* **Composer**: Dependency manager for PHP.
+* **Node.js (v18+) & NPM**: Required for the React/Inertia frontend.
 
 ---
 
-## 🏗️ Installation
+### 2. Step-by-Step Installation
 
-1. **Clone & Install**
-   ```bash
-   git clone https://github.com/dbtrick/survey-platform.git
-   cd survey-platform
-   composer install && npm install
+**A. Clone the Repository** Navigate to your web directory (e.g., `C:/xampp/htdocs`) and run:
+```bash
+git clone https://github.com/dbtrick/survey-platform.git
+cd survey-platform
+composer run dev
