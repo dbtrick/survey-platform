@@ -35,9 +35,7 @@ const data = {
         avatar: "/avatars/shadcn.jpg",
     },
     teams: [
-        { name: "APVMA", logo: GalleryVerticalEnd, plan: "Enterprise" },
-        { name: "HREC", logo: AudioWaveform, plan: "Startup" },
-        { name: "ACQSC", logo: Command, plan: "Free" },
+        { name: "OASIS", logo: GalleryVerticalEnd, plan: "Survey Platform" },
     ],
     projects: [
         { name: "Design Engineering", url: "#", icon: Frame },
