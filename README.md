@@ -66,6 +66,6 @@ The final stage involves preparing data for deep-dive statistical analysis.
 
 1. **Clone & Install**
    ```bash
-   git clone [https://github.com/your-username/survey-core.git](https://github.com/your-username/survey-core.git)
-   cd survey-core
+   git clone https://github.com/dbtrick/survey-platform.git
+   cd survey-platform
    composer install && npm install
