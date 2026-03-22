@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import AppLayout from "@/layouts/app-layout";
 import { Head, router } from "@inertiajs/react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -8,6 +9,11 @@ import { Users, ClipboardList, Zap, TrendingUp } from "lucide-react";
 declare var route: any;
 
 export default function Dashboard({ stats, chartData, filters }: any) {
+  const [mounted, setMounted] = useState(false); // 2. Add state
+
+  useEffect(() => {
+    setMounted(true); // 3. Set to true once the browser loads
+  }, []);
 
   const handleFilterChange = (value: string) => {
     router.get(route('dashboard'), { days: value }, { preserveState: true });
@@ -49,24 +55,26 @@ export default function Dashboard({ stats, chartData, filters }: any) {
             <CardDescription>Daily response volume trend.</CardDescription>
           </CardHeader>
           <CardContent className="h-[350px] w-full pt-4">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartData}>
-                <defs>
-                  <linearGradient id="colorRes" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
-                <XAxis dataKey="date" stroke="#475569" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis stroke="#475569" fontSize={12} tickLine={false} axisLine={false} />
-                <Tooltip
-                  contentStyle={{ backgroundColor: '#0c0c0e', border: '1px solid #ffffff10', borderRadius: '12px' }}
-                  itemStyle={{ color: '#fff' }}
-                />
-                <Area type="monotone" dataKey="responses" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorRes)" />
-              </AreaChart>
-            </ResponsiveContainer>
+            {mounted && (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={chartData}>
+                  <defs>
+                    <linearGradient id="colorRes" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
+                  <XAxis dataKey="date" stroke="#475569" fontSize={12} tickLine={false} axisLine={false} />
+                  <YAxis stroke="#475569" fontSize={12} tickLine={false} axisLine={false} />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: '#0c0c0e', border: '1px solid #ffffff10', borderRadius: '12px' }}
+                    itemStyle={{ color: '#fff' }}
+                  />
+                  <Area type="monotone" dataKey="responses" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorRes)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            )}
           </CardContent>
         </Card>
       </div>
